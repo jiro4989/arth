@@ -4,6 +4,7 @@ APPNAME := $(shell basename `pwd`)
 .PHONY: build
 build: $(SRCS)
 	go build -o bin/$(APPNAME) .
+	go install
 
 .PHONY: test
 test:

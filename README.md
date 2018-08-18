@@ -71,19 +71,19 @@ count,min,max,sum,avgはデフォルトで出力する。
 ```bash
 $ arth testdata/bigdata.txt
 count	min	max	sum	avg
-0	1	100	5050	50.5
+100	1	100	5050	50.5
 ```
 
 ```bash
 $ arth testdata/bigdata.txt --count
 count
-0
+100
 ```
 
 ```bash
 $ arth testdata/bigdata.txt --count --sum
 count	sum
-0	5050
+100	5050
 ```
 
 ```bash

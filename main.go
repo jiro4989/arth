@@ -70,12 +70,11 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 	ov := options.OutValues{}
 	ns := make([]float64, 0)
 	var err error
-	ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = calcMinMaxSumAvg(r, opts.MedianFlag)
+	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = calcMinMaxSumAvg(r, opts.MedianFlag)
 	if err != nil {
 		return ov, err
 	}
 
-	ov.Count = len(ns)
 	if opts.MedianFlag {
 		// SordedFlagがなければ、ソートを実行
 		// SordedFlagがあれば、ソート済みとしてソートはスキップ(高速化)
@@ -91,14 +90,13 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 // needValuesフラグがtrueのときは入力をfloat64スライスに変換した値も返す
 // needValuesフラグをセットしなければスライスは初期値のまま返却し、
 // スライスにデータを保持しないため省メモリになる
-func calcMinMaxSumAvg(r io.Reader, needValues bool) (min, max, sum, avg float64, ns []float64, err error) {
+func calcMinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg float64, ns []float64, err error) {
 	min = math.MaxFloat64 // 最初にでかい値を入れてないと判定されない
 	max = 0.0
 	sum = 0.0
 	avg = 0.0
 
 	// 入力をfloatに変換して都度計算
-	cnt := 0
 	sc := bufio.NewScanner(r)
 	for sc.Scan() {
 		line := sc.Text()
