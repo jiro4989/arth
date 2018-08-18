@@ -50,3 +50,38 @@ arth time.list
 # 5	1	5	15	3
 ```
 
+## 仕様
+
+count,min,max,sum,avgはデフォルトで出力する。
+
+ただし、上記のいずれもオプション引数で指定しない場合のみ上記がデフォルトで出力さ
+れる。
+
+つまり、上記の5つのうち、1つでも意図的に指定すると、他の4つが出力されなくなる。
+
+### 通常例
+
+```bash
+$ arth testdata/bigdata.txt
+count	min	max	sum	avg
+0	1	100	5050	50.5
+```
+
+```bash
+$ arth testdata/bigdata.txt --count
+count
+0
+```
+
+```bash
+$ arth testdata/bigdata.txt --count --sum
+count	sum
+0	5050
+```
+
+```bash
+$ arth testdata/bigdata.txt -m
+count	min	max	sum	avg	median
+100	1	100	5050	50.5	50
+```
+
