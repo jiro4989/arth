@@ -83,6 +83,20 @@ func TestCalcMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 15.0, sum)
 	assert.Equal(t, 3.0, avg)
 
+	min, max, sum, avg, ns, err = calcMinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false)
+	assert.NoError(t, err)
+	assert.Equal(t, 1.0, min)
+	assert.Equal(t, 5.0, max)
+	assert.Equal(t, 15.0, sum)
+	assert.Equal(t, 3.0, avg)
+
+	min, max, sum, avg, ns, err = calcMinMaxSumAvg(f("foobar\n4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false)
+	assert.NoError(t, err)
+	assert.Equal(t, 1.0, min)
+	assert.Equal(t, 5.0, max)
+	assert.Equal(t, 15.0, sum)
+	assert.Equal(t, 3.0, avg)
+
 	min, max, sum, avg, ns, err = calcMinMaxSumAvg(f("1.0\n"), false)
 	assert.NoError(t, err)
 	assert.Equal(t, 1.0, min)
