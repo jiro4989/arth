@@ -105,7 +105,7 @@ func calcMinMaxSumAvg(r io.Reader, needValues bool) (min, max, sum, avg float64,
 		line = strings.Trim(line, " ")
 		n, err := strconv.ParseFloat(line, 64)
 		if err != nil {
-			// 不正な文字列が存在しても皇族の処理を継続してほしいのでcontinue
+			// 不正な文字列が存在しても後続の処理を継続してほしいのでcontinue
 			continue
 		}
 		min = math.Min(n, min)
