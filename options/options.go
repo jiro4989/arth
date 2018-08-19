@@ -16,6 +16,7 @@ const (
 
 // Options はコマンドラインオプション引数です。
 type Options struct {
+	Version           func() `short:"v" long:"version" description:"バージョン情報"`
 	CountFlag         bool   `long:"count" description:"データ数を出力する"`
 	MinFlag           bool   `long:"min" description:"最小値を出力する"`
 	MaxFlag           bool   `long:"max" description:"最大値を出力する"`

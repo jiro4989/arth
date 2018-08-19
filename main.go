@@ -15,8 +15,15 @@ import (
 	"github.com/jiro4989/arth/options"
 )
 
+var Version string
+
 func main() {
 	var opts options.Options
+	opts.Version = func() {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
 	args, err := flags.Parse(&opts)
 	if err != nil {
 		os.Exit(0)
