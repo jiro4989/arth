@@ -96,3 +96,9 @@ count	min	max	sum	avg	median
 100	1	100	5050	50.5	50
 ```
 
+## 開発方法
+
+```
+make deps
+make
+```
