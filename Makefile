@@ -24,7 +24,7 @@ archive: xbuild
 			cp $(README) $$d/ ; \
 		done
 	cd $(DIST_DIR) && \
-		find . -type d -maxdepth 1 -mindepth 1 \
+		find . -maxdepth 1 -mindepth 1 -a -type d  \
 		| while read -r d; \
 		do \
 			tar czf $$d.tar.gz $$d; \
