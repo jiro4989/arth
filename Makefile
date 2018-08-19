@@ -13,7 +13,7 @@ build: $(SRCS)
 	go install
 
 .PHONY: xbuild
-xbuild: $(SRCS)
+xbuild: $(SRCS) gox
 	gox $(LDFLAGS) --output "$(DIST_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 .PHONY: archive
@@ -31,24 +31,41 @@ archive: xbuild
 		done
 
 .PHONY: release
-release: archive
+release: archive ghr
 	ghr $(VERSION) $(DIST_DIR)/
 
 .PHONY: test
 test:
-	go test ./...
+	go test -cover ./...
 
 .PHONY: clean
 clean:
-	-rm -f bin
+	-rm -rf bin
 	-rm -rf $(DIST_DIR)
-
-.PHONY: dep
-dep:
-ifeq ($(shell which dep 2>/dev/null),)
-	go get -u github.com/golang/dep/cmd/dep
-endif
 
 .PHONY: deps
 deps: dep
 	dep ensure
+
+# 依存するツール
+
+# パッケージ管理
+.PHONY: dep
+dep:
+ifeq ($(shell which dep 2>/dev/null),)
+	go get github.com/golang/dep/cmd/dep
+endif
+
+# クロスコンパイル
+.PHONY: gox
+gox:
+ifeq ($(shell which gox 2>/dev/null),)
+	go get github.com/mitchellh/gox
+endif
+
+# githubにリリース
+.PHONY: ghr
+ghr:
+ifeq ($(shell which ghr 2>/dev/null),)
+	go get github.com/tcnksm/ghr
+endif
