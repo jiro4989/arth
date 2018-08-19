@@ -50,6 +50,10 @@ arth time.list
 # 5	1	5	15	3
 ```
 
+## インストール方法
+
+`go get github.com/jiro4989/arth`
+
 ## 仕様
 
 ### 不正なデータ
