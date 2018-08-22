@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/jiro4989/arth/options"
+	"github.com/jiro4989/arth/internal/options"
 	"github.com/stretchr/testify/assert"
 )
 

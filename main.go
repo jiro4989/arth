@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/jiro4989/arth/options"
+	"github.com/jiro4989/arth/internal/options"
 )
 
 var Version string
