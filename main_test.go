@@ -12,16 +12,16 @@ import (
 func TestFormat(t *testing.T) {
 	args := []string{"testdata/bigdata.txt"}
 	opts := options.Options{
-		CountFlag:         true,
-		MinFlag:           true,
-		MaxFlag:           true,
-		SumFlag:           true,
-		AverageFlag:       true,
-		MedianFlag:        true,
-		SordedFlag:        false,
-		NoHeaderFlag:      false,
-		OutFieldSeparator: "\t",
-		OutFile:           "",
+		CountFlag:    true,
+		MinFlag:      true,
+		MaxFlag:      true,
+		SumFlag:      true,
+		AverageFlag:  true,
+		MedianFlag:   true,
+		SordedFlag:   false,
+		NoHeaderFlag: false,
+		Delimiter:    "\t",
+		OutFile:      "",
 	}
 	s, err := format(args, opts)
 	assert.NoError(t, err)
@@ -34,16 +34,16 @@ func TestCalcOutValues(t *testing.T) {
 	}
 
 	opts := options.Options{
-		CountFlag:         true,
-		MinFlag:           true,
-		MaxFlag:           true,
-		SumFlag:           true,
-		AverageFlag:       true,
-		MedianFlag:        true,
-		SordedFlag:        false,
-		NoHeaderFlag:      false,
-		OutFieldSeparator: "\t",
-		OutFile:           "",
+		CountFlag:    true,
+		MinFlag:      true,
+		MaxFlag:      true,
+		SumFlag:      true,
+		AverageFlag:  true,
+		MedianFlag:   true,
+		SordedFlag:   false,
+		NoHeaderFlag: false,
+		Delimiter:    "\t",
+		OutFile:      "",
 	}
 	ov, err := calcOutValues(f("1.0\n2.0\n3.0\n4.0\n5.0\n"), opts)
 	assert.NoError(t, err)

@@ -16,17 +16,17 @@ const (
 
 // Options はコマンドラインオプション引数です。
 type Options struct {
-	Version           func() `short:"v" long:"version" description:"バージョン情報"`
-	CountFlag         bool   `long:"count" description:"データ数を出力する"`
-	MinFlag           bool   `long:"min" description:"最小値を出力する"`
-	MaxFlag           bool   `long:"max" description:"最大値を出力する"`
-	SumFlag           bool   `long:"sum" description:"合計を出力する"`
-	AverageFlag       bool   `long:"avg" description:"平均値を出力する"`
-	MedianFlag        bool   `short:"m" long:"median" description:"中央値を出力する"`
-	SordedFlag        bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
-	NoHeaderFlag      bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
-	OutFieldSeparator string `long:"separator" description:"出力時のセパレータを指定" default:"\t"`
-	OutFile           string `short:"o" long:"outfile" description:"出力ファイルパス"`
+	Version      func() `short:"v" long:"version" description:"バージョン情報"`
+	CountFlag    bool   `long:"count" description:"データ数を出力する"`
+	MinFlag      bool   `long:"min" description:"最小値を出力する"`
+	MaxFlag      bool   `long:"max" description:"最大値を出力する"`
+	SumFlag      bool   `long:"sum" description:"合計を出力する"`
+	AverageFlag  bool   `long:"avg" description:"平均値を出力する"`
+	MedianFlag   bool   `short:"m" long:"median" description:"中央値を出力する"`
+	SordedFlag   bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
+	NoHeaderFlag bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
+	Delimiter    string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
+	OutFile      string `short:"o" long:"outfile" description:"出力ファイルパス"`
 }
 
 // Setup はオプションのデフォルト値をセットします。
@@ -74,9 +74,9 @@ func (o *Options) Format(v OutValues) string {
 	setFunc(o.AverageFlag, HeaderAverage, v.Average)
 	setFunc(o.MedianFlag, HeaderMedian, v.Median)
 
-	record := strings.Join(vs, o.OutFieldSeparator)
+	record := strings.Join(vs, o.Delimiter)
 	if !o.NoHeaderFlag {
-		h := strings.Join(hs, o.OutFieldSeparator)
+		h := strings.Join(hs, o.Delimiter)
 		record = h + "\n" + record
 	}
 	return record

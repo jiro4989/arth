@@ -19,6 +19,7 @@
       arth [OPTIONS]
 
     Application Options:
+      -v, --version    バージョン情報
           --count      データ数を出力する
           --min        最小値を出力する
           --max        最大値を出力する
@@ -27,7 +28,7 @@
       -m, --median     中央値を出力する
       -s, --sorted     入力元データがソート済みフラグ
       -n, --noheader   ヘッダを出力しない
-          --separator= 出力時のセパレータを指定 (default: "\t")
+      -d, --delimiter= 出力時の区切り文字を指定 (default: "\t")
       -o, --outfile=   出力ファイルパス
 
     Help Options:
