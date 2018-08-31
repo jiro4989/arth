@@ -1,5 +1,5 @@
 APPNAME := $(shell basename `pwd`)
-VERSION := v1.1.0
+VERSION := v1.1.1
 SRCS := $(shell find . -name "*.go" -type f )
 LDFLAGS := -ldflags="-s -w \
 	-X \"main.Version=$(VERSION)\" \

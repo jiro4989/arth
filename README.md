@@ -102,3 +102,26 @@ count	min	max	sum	avg	median
 make deps
 make
 ```
+
+## 処理速度
+
+`bash script/bench.sh`
+
+bashスクリプトのみの場合
+
+    count min max sum avg median
+    6000000 0 6000000 18000003000000 3e+06 3000000
+
+    real	0m4.205s
+    user	0m11.060s
+    sys	0m0.135s
+
+arthコマンドの場合
+
+    count	min	max	sum	avg	median
+    6000000	1	6000000	18000003000000	3000000.5	3000000
+
+    real	0m2.308s
+    user	0m2.341s
+    sys	0m0.050s
+

@@ -51,6 +51,18 @@ func (o *Options) Format(v OutValues) string {
 			if !o.NoHeaderFlag {
 				hs = append(hs, h)
 			}
+			if n, ok := v.(int); ok {
+				vs = append(vs, fmt.Sprintf("%d", n))
+				return
+			}
+			if n, ok := v.(float64); ok {
+				s := fmt.Sprintf("%.2f", n)
+				// 不要な末尾の0埋めを削除
+				s = strings.TrimRight(s, "0")
+				s = strings.TrimRight(s, ".")
+				vs = append(vs, s)
+				return
+			}
 			vs = append(vs, fmt.Sprintf("%v", v))
 		}
 	}
