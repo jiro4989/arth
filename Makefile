@@ -3,9 +3,11 @@ VERSION := v$(shell gobump show -r)
 SRCS := $(shell find . -name "*.go" -type f )
 LDFLAGS := -ldflags="-s -w \
 	-extldflags \"-static\""
+XBUILD_TARGETS := \
+	-os="windows linux darwin" \
+	-arch="386 amd64" 
 DIST_DIR := dist/$(VERSION)
 README := README.md
-
 EXTERNAL_TOOLS := \
 	github.com/golang/dep/cmd/dep \
 	github.com/mitchellh/gox \
@@ -19,7 +21,7 @@ build: $(SRCS)
 
 .PHONY: xbuild
 xbuild: $(SRCS) bootstrap
-	gox $(LDFLAGS) --output "$(DIST_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}"
+	gox $(LDFLAGS) $(XBUILD_TARGETS) --output "$(DIST_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 .PHONY: archive
 archive: xbuild
