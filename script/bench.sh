@@ -1,4 +1,5 @@
 #!/bin/bash
 
-time bash script/median.sh testdata/big.txt
-time arth -m testdata/big.txt
+infile=testdata/bench.txt
+time bash script/median.sh $infile
+time arth -m $infile
