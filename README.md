@@ -33,11 +33,11 @@ arth time.list
 ### 複数ファイル指定
 
 ```bash
-$ arth -m testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
-filename	count	min	max	sum	avg	median
-testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000
-testdata/normal_num.txt	5	1	5	15	3	3
-testdata/bigdata.txt	100	1	100	5050	50.5	50
+$ arth -m -p 95 testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
+filename	count	min	max	sum	avg	median	95percentile
+testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
+testdata/normal_num.txt	5	1	5	15	3	3	4
+testdata/bigdata.txt	100	1	100	5050	50.5	50	95
 ```
 
 ## ヘルプ
