@@ -29,7 +29,7 @@ type Options struct {
 	SumFlag        bool   `long:"sum" description:"合計を出力する"`
 	AverageFlag    bool   `long:"avg" description:"平均値を出力する"`
 	MedianFlag     bool   `short:"m" long:"median" description:"中央値を出力する"`
-	Percentile     int    `short:"p" long:"percentile" description:"パーセンタイル値を出力する"`
+	Percentile     int    `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
 	SordedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
 	NoHeaderFlag   bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
 	Delimiter      string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
@@ -76,6 +76,11 @@ func (o *Options) Setup() {
 		o.SumFlag = true
 		o.MaxFlag = true
 		o.AverageFlag = true
+	}
+	if 100 < o.Percentile {
+		msg := fmt.Sprintf("warn: percentile is from 1 to 100. percentile=%d", o.Percentile)
+		fmt.Fprintln(os.Stderr, msg)
+		o.Percentile = 100
 	}
 }
 
