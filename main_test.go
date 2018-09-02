@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/jiro4989/arth/internal/options"
@@ -221,31 +222,182 @@ func TestProcessMultiInput(t *testing.T) {
 	}
 }
 
+type TestCalcOutValuesData struct {
+	r    io.Reader
+	opts options.Options
+	out  options.OutValues
+}
+
 func TestCalcOutValues(t *testing.T) {
-	f := func(s string) io.Reader {
-		return bytes.NewBufferString(s)
+	f := func(ss ...string) io.Reader {
+		return bytes.NewBufferString(strings.Join(ss, "\n"))
 	}
 
-	opts := options.Options{
-		CountFlag:    true,
-		MinFlag:      true,
-		MaxFlag:      true,
-		SumFlag:      true,
-		AverageFlag:  true,
-		MedianFlag:   true,
-		SordedFlag:   false,
-		NoHeaderFlag: false,
-		Delimiter:    "\t",
-		OutFile:      "",
+	tds := []TestCalcOutValuesData{
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"3.0",
+				"4.0",
+				"5.0",
+			),
+			opts: options.Options{
+				CountFlag:   true,
+				MinFlag:     true,
+				MaxFlag:     true,
+				SumFlag:     true,
+				AverageFlag: true,
+				MedianFlag:  true,
+				Percentile:  95,
+			},
+			out: options.OutValues{
+				Count:      5,
+				Min:        1,
+				Max:        5,
+				Sum:        15,
+				Average:    3,
+				Median:     3,
+				Percentile: 4,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"3.0",
+				"4.0",
+				"5.0",
+			),
+			opts: options.Options{
+				CountFlag:   true,
+				MinFlag:     true,
+				MaxFlag:     true,
+				SumFlag:     true,
+				AverageFlag: true,
+				MedianFlag:  true,
+			},
+			out: options.OutValues{
+				Count:   5,
+				Min:     1,
+				Max:     5,
+				Sum:     15,
+				Average: 3,
+				Median:  3,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"3.0",
+				"4.0",
+				"5.0",
+			),
+			opts: options.Options{
+				CountFlag:  true,
+				Percentile: 95,
+			},
+			out: options.OutValues{
+				Count:      5,
+				Min:        1,
+				Max:        5,
+				Sum:        15,
+				Average:    3,
+				Percentile: 4,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"3.0",
+				"4.0",
+				"5.0",
+			),
+			opts: options.Options{
+				MinFlag: true,
+			},
+			out: options.OutValues{
+				Count:   5,
+				Min:     1,
+				Max:     5,
+				Sum:     15,
+				Average: 3,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"5.0",
+				"3.0",
+				"4.0",
+			),
+			opts: options.Options{
+				SordedFlag: true,
+				MedianFlag: true,
+				Percentile: 95,
+			},
+			out: options.OutValues{
+				Count:      5,
+				Min:        1,
+				Max:        5,
+				Sum:        15,
+				Average:    3,
+				Median:     5,
+				Percentile: 3,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"5.0",
+				"3.0",
+				"4.0",
+			),
+			opts: options.Options{
+				SordedFlag: true,
+				Percentile: 95,
+			},
+			out: options.OutValues{
+				Count:      5,
+				Min:        1,
+				Max:        5,
+				Sum:        15,
+				Average:    3,
+				Percentile: 3,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0",
+				"2.0",
+				"5.0",
+				"3.0",
+				"4.0",
+			),
+			opts: options.Options{
+				SordedFlag: true,
+				MedianFlag: true,
+			},
+			out: options.OutValues{
+				Count:   5,
+				Min:     1,
+				Max:     5,
+				Sum:     15,
+				Average: 3,
+				Median:  5,
+			},
+		},
 	}
-	ov, err := calcOutValues(f("1.0\n2.0\n3.0\n4.0\n5.0\n"), opts)
-	assert.NoError(t, err)
-	assert.Equal(t, 5, ov.Count)
-	assert.Equal(t, 1.0, ov.Min)
-	assert.Equal(t, 5.0, ov.Max)
-	assert.Equal(t, 15.0, ov.Sum)
-	assert.Equal(t, 3.0, ov.Average)
-	assert.Equal(t, 3.0, ov.Median)
+
+	for _, v := range tds {
+		ov, err := calcOutValues(v.r, v.opts)
+		assert.NoError(t, err)
+		assert.Equal(t, v.out, ov)
+	}
 }
 
 func TestOut(t *testing.T) {
