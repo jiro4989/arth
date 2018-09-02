@@ -122,7 +122,7 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 // calcOutValues は入力から出力データを計算する。
 // オプションMedianFlagが存在するとき、ソートとソートデータの保持により
 // メモリ消費と計算時間が増加する。
-// オプションSordedFlagが存在するとき、入力がすでにソート済みとして
+// オプションSortedFlagが存在するとき、入力がすでにソート済みとして
 // ソート処理をスキップする。
 func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error) {
 	ov := options.OutValues{} // 出力データ
@@ -135,12 +135,12 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 		return ov, err
 	}
 
-	// SordedFlagとsortedがfalse、ソートを実行
+	// SortedFlagとsortedがfalse、ソートを実行
 	// ソート済みならソートをスキップ(高速化)
 	sortFunc := func() {
-		if !opts.SordedFlag {
+		if !opts.SortedFlag {
 			sort.Float64s(ns)
-			opts.SordedFlag = true
+			opts.SortedFlag = true
 		}
 	}
 

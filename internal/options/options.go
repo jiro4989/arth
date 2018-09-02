@@ -30,7 +30,7 @@ type Options struct {
 	AverageFlag    bool   `long:"avg" description:"平均値を出力する"`
 	MedianFlag     bool   `short:"m" long:"median" description:"中央値を出力する"`
 	Percentile     int    `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
-	SordedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
+	SortedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
 	NoHeaderFlag   bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
 	Delimiter      string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
 	OutFile        string `short:"o" long:"outfile" description:"出力ファイルパス"`
