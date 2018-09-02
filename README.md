@@ -56,6 +56,7 @@ testdata/bigdata.txt	100	1	100	5050	50.5	50
           --sum         合計を出力する
           --avg         平均値を出力する
       -m, --median      中央値を出力する
+      -p, --percentile= パーセンタイル値を出力する
       -s, --sorted      入力元データがソート済みフラグ
       -n, --noheader    ヘッダを出力しない
       -d, --delimiter=  出力時の区切り文字を指定 (default: "\t")
