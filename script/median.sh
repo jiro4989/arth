@@ -4,7 +4,7 @@ n=$(cat $1 | wc -l)
 n=$((n / 2))
 
 sort -n $1 | awk '
-BEGIN{ min = 0 }
+BEGIN{ min = 999999999 }
 
 {
   if ($1 < min) {

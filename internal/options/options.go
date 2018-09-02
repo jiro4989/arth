@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	FileName      = "filename"
 	HeaderCount   = "count"
 	HeaderMin     = "min"
 	HeaderMax     = "max"
@@ -19,17 +20,29 @@ const (
 
 // Options はコマンドラインオプション引数です。
 type Options struct {
-	Version      func() `short:"v" long:"version" description:"バージョン情報"`
-	CountFlag    bool   `long:"count" description:"データ数を出力する"`
-	MinFlag      bool   `long:"min" description:"最小値を出力する"`
-	MaxFlag      bool   `long:"max" description:"最大値を出力する"`
-	SumFlag      bool   `long:"sum" description:"合計を出力する"`
-	AverageFlag  bool   `long:"avg" description:"平均値を出力する"`
-	MedianFlag   bool   `short:"m" long:"median" description:"中央値を出力する"`
-	SordedFlag   bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
-	NoHeaderFlag bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
-	Delimiter    string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
-	OutFile      string `short:"o" long:"outfile" description:"出力ファイルパス"`
+	Version        func() `short:"v" long:"version" description:"バージョン情報"`
+	NoFileNameFlag bool   `long:"nofilename" description:"入力元ファイル名を出力しない"`
+	CountFlag      bool   `long:"count" description:"データ数を出力する"`
+	MinFlag        bool   `long:"min" description:"最小値を出力する"`
+	MaxFlag        bool   `long:"max" description:"最大値を出力する"`
+	SumFlag        bool   `long:"sum" description:"合計を出力する"`
+	AverageFlag    bool   `long:"avg" description:"平均値を出力する"`
+	MedianFlag     bool   `short:"m" long:"median" description:"中央値を出力する"`
+	SordedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
+	NoHeaderFlag   bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
+	Delimiter      string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
+	OutFile        string `short:"o" long:"outfile" description:"出力ファイルパス"`
+}
+
+// OutValues はFormat関数で使用する値構造体です。
+type OutValues struct {
+	FileName string
+	Count    int
+	Min      float64
+	Max      float64
+	Sum      float64
+	Average  float64
+	Median   float64
 }
 
 // Parse はコマンドラインオプションを解析する。
@@ -90,6 +103,9 @@ func Format(vs []OutValues, opts Options) []string {
 			}
 		}
 
+		if v.FileName != "" {
+			setFunc(!opts.NoFileNameFlag, FileName, v.FileName)
+		}
 		setFunc(opts.CountFlag, HeaderCount, v.Count)
 		setFunc(opts.MinFlag, HeaderMin, v.Min)
 		setFunc(opts.MaxFlag, HeaderMax, v.Max)
@@ -102,11 +118,12 @@ func Format(vs []OutValues, opts Options) []string {
 
 	lines := make([]string, 0)
 
-	headers := make([]string, 0)
 	// ヘッダの連結
 	// オプションがあるとセットしない
+	headers := make([]string, 0)
 	m := maps[0]
 	for _, k := range []string{
+		FileName,
 		HeaderCount,
 		HeaderMin,
 		HeaderMax,
@@ -135,14 +152,4 @@ func Format(vs []OutValues, opts Options) []string {
 	}
 
 	return lines
-}
-
-// OutValues はFormat関数で使用する値構造体です。
-type OutValues struct {
-	Count   int
-	Min     float64
-	Max     float64
-	Sum     float64
-	Average float64
-	Median  float64
 }

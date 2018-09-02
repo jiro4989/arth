@@ -97,6 +97,7 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 					// 処理を計測してほしいのでpanicしない
 					logger.Println(err)
 				}
+				ov.FileName = fn // 並列処理の方ではファイル名がわかるのでセット
 
 				i := ifn.index
 				ovs[i] = ov

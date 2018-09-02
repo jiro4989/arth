@@ -26,18 +26,18 @@
 ```bash
 arth time.list
 # 出力
-# count	min	max	sum	avg
-# 5	1	5	15	3
+# filename	count	min	max	sum	avg
+# time.list	5	1	5	15	3
 ```
 
 ### 複数ファイル指定
 
 ```bash
 $ arth -m testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
-count	min	max	sum	avg	median
-6000000	1	6000000	18000003000000	3000000.5	3000000
-5	1	5	15	3	3
-100	1	100	5050	50.5	50
+filename	count	min	max	sum	avg	median
+testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000
+testdata/normal_num.txt	5	1	5	15	3	3
+testdata/bigdata.txt	100	1	100	5050	50.5	50
 ```
 
 ## ヘルプ
@@ -48,20 +48,21 @@ count	min	max	sum	avg	median
       arth [OPTIONS]
 
     Application Options:
-      -v, --version    バージョン情報
-          --count      データ数を出力する
-          --min        最小値を出力する
-          --max        最大値を出力する
-          --sum        合計を出力する
-          --avg        平均値を出力する
-      -m, --median     中央値を出力する
-      -s, --sorted     入力元データがソート済みフラグ
-      -n, --noheader   ヘッダを出力しない
-      -d, --delimiter= 出力時の区切り文字を指定 (default: "\t")
-      -o, --outfile=   出力ファイルパス
+      -v, --version     バージョン情報
+          --nofilename  入力元ファイル名を出力しない
+          --count       データ数を出力する
+          --min         最小値を出力する
+          --max         最大値を出力する
+          --sum         合計を出力する
+          --avg         平均値を出力する
+      -m, --median      中央値を出力する
+      -s, --sorted      入力元データがソート済みフラグ
+      -n, --noheader    ヘッダを出力しない
+      -d, --delimiter=  出力時の区切り文字を指定 (default: "\t")
+      -o, --outfile=    出力ファイルパス
 
     Help Options:
-      -h, --help       Show this help message
+      -h, --help        Show this help message
 
 ## 仕様
 
@@ -83,26 +84,26 @@ count,min,max,sum,avgはデフォルトで出力する。
 
 ```bash
 $ arth testdata/bigdata.txt
-count	min	max	sum	avg
-100	1	100	5050	50.5
+filename	count	min	max	sum	avg
+testdata/bigdata.txt	100	1	100	5050	50.5
 ```
 
 ```bash
 $ arth testdata/bigdata.txt --count
-count
-100
+filename	count
+testdata/bigdata.txt	100
 ```
 
 ```bash
 $ arth testdata/bigdata.txt --count --sum
-count	sum
-100	5050
+filename	count	sum
+testdata/bigdata.txt	100	5050
 ```
 
 ```bash
 $ arth testdata/bigdata.txt -m
-count	min	max	sum	avg	median
-100	1	100	5050	50.5	50
+filename	count	min	max	sum	avg	median
+testdata/bigdata.txt	100	1	100	5050	50.5	50
 ```
 
 ## 開発方法
@@ -114,23 +115,27 @@ make
 
 ## 処理速度
 
-`bash script/bench.sh`
+ベンチマーク用のスクリプトを実行した結果。
 
-bashスクリプトのみの場合
+```bash
+$ bash script/bench.sh
+median.sh vs arth
 
-    count min max sum avg median
-    6000000 0 6000000 18000003000000 3e+06 3000000
+real	0m4.498s
+user	0m10.668s
+sys	0m0.162s
 
-    real	0m4.205s
-    user	0m11.060s
-    sys	0m0.135s
+real	0m2.447s
+user	0m2.466s
+sys	0m0.040s
+================================
+arth -m goroutine vs loop arth -m
 
-arthコマンドの場合
+real	0m3.472s
+user	0m9.636s
+sys	0m0.127s
 
-    count	min	max	sum	avg	median
-    6000000	1	6000000	18000003000000	3000000.5	3000000
-
-    real	0m2.308s
-    user	0m2.341s
-    sys	0m0.050s
-
+real	0m14.631s
+user	0m14.763s
+sys	0m0.214s
+```

@@ -28,12 +28,13 @@ func TestProcessInput(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, []options.OutValues{
 		options.OutValues{
-			Count:   100,
-			Min:     1,
-			Max:     100,
-			Sum:     5050,
-			Average: 50.5,
-			Median:  50,
+			FileName: "testdata/bigdata.txt",
+			Count:    100,
+			Min:      1,
+			Max:      100,
+			Sum:      5050,
+			Average:  50.5,
+			Median:   50,
 		},
 	}, o)
 
@@ -107,20 +108,22 @@ func TestProcessMultiInput(t *testing.T) {
 	o := processMultiInput(args, opts)
 	assert.Equal(t, []options.OutValues{
 		options.OutValues{
-			Count:   100,
-			Min:     1,
-			Max:     100,
-			Sum:     5050,
-			Average: 50.5,
-			Median:  50,
+			FileName: "testdata/bigdata.txt",
+			Count:    100,
+			Min:      1,
+			Max:      100,
+			Sum:      5050,
+			Average:  50.5,
+			Median:   50,
 		},
 		options.OutValues{
-			Count:   5,
-			Min:     1,
-			Max:     5,
-			Sum:     15,
-			Average: 3,
-			Median:  3,
+			FileName: "testdata/normal_num.txt",
+			Count:    5,
+			Min:      1,
+			Max:      5,
+			Sum:      15,
+			Average:  3,
+			Median:   3,
 		},
 	}, o)
 }

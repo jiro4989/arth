@@ -251,6 +251,83 @@ func TestFormat(t *testing.T) {
 		TestFormatData{
 			ovs: []OutValues{
 				OutValues{
+					FileName: "foo.txt",
+					Count:    2,
+					Min:      1.0,
+					Max:      2.0,
+					Sum:      3.0,
+					Average:  1.5,
+					Median:   1.0,
+				},
+				OutValues{
+					FileName: "bar.txt",
+					Count:    100,
+					Min:      1.0,
+					Max:      2.0,
+					Sum:      3.0,
+					Average:  1.5,
+					Median:   1.0,
+				},
+			},
+			opts: Options{
+				CountFlag:    true,
+				MinFlag:      true,
+				MaxFlag:      true,
+				SumFlag:      true,
+				AverageFlag:  true,
+				MedianFlag:   false,
+				SordedFlag:   false,
+				NoHeaderFlag: false,
+				Delimiter:    "\t",
+			},
+			out: []string{
+				"filename\tcount\tmin\tmax\tsum\tavg",
+				"foo.txt\t2\t1\t2\t3\t1.5",
+				"bar.txt\t100\t1\t2\t3\t1.5",
+			},
+		},
+		TestFormatData{
+			ovs: []OutValues{
+				OutValues{
+					FileName: "foo.txt",
+					Count:    2,
+					Min:      1.0,
+					Max:      2.0,
+					Sum:      3.0,
+					Average:  1.5,
+					Median:   1.0,
+				},
+				OutValues{
+					FileName: "bar.txt",
+					Count:    100,
+					Min:      1.0,
+					Max:      2.0,
+					Sum:      3.0,
+					Average:  1.5,
+					Median:   1.0,
+				},
+			},
+			opts: Options{
+				NoFileNameFlag: true,
+				CountFlag:      true,
+				MinFlag:        true,
+				MaxFlag:        true,
+				SumFlag:        true,
+				AverageFlag:    true,
+				MedianFlag:     false,
+				SordedFlag:     false,
+				NoHeaderFlag:   false,
+				Delimiter:      "\t",
+			},
+			out: []string{
+				"count\tmin\tmax\tsum\tavg",
+				"2\t1\t2\t3\t1.5",
+				"100\t1\t2\t3\t1.5",
+			},
+		},
+		TestFormatData{
+			ovs: []OutValues{
+				OutValues{
 					Count:   2,
 					Min:     1.0,
 					Max:     2.0,
