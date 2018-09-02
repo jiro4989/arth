@@ -1,69 +1,121 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"math"
+	"log"
 	"os"
+	"runtime"
 	"sort"
-	"strconv"
-	"strings"
+	"sync"
 
-	flags "github.com/jessevdk/go-flags"
 	"github.com/jiro4989/arth/internal/options"
+	arthio "github.com/jiro4989/arth/io"
+	arthmath "github.com/jiro4989/arth/math"
 )
 
+// エラー出力ログ
+var logger = log.New(os.Stderr, "", 0)
+
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
 func main() {
-	var opts options.Options
-	opts.Version = func() {
-		fmt.Println(Version)
-		os.Exit(0)
-	}
+	// オプション引数の解析
+	opts, args := options.Parse(Version)
 
-	args, err := flags.Parse(&opts)
-	if err != nil {
-		os.Exit(0)
-	}
-	opts = opts.Setup()
-
-	s, err := format(args, opts)
+	// 入力データの処理
+	ovs, err := processInput(args, opts)
 	if err != nil {
 		panic(err)
 	}
 
-	if opts.OutFile == "" {
-		fmt.Println(s)
-	} else {
-		err := ioutil.WriteFile(opts.OutFile, []byte(s), os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
+	// 出力用に整形
+	lines := options.Format(ovs, opts)
+
+	// 標準出力、あるいはファイル出力
+	if err := out(lines, opts); err != nil {
+		panic(err)
 	}
 }
 
-// format は引数、オプションを判定して計算し、出力する文字列を生成する。
-func format(args []string, opts options.Options) (string, error) {
-	// 引数指定がある場合はファイル名としてファイル読み込みを実施
-	// 指定がない場合は標準入力を受け取る
-	var r *os.File
-	if 1 <= len(args) {
-		var err error
-		r, err = os.Open(args[0])
-		if err != nil {
-			return "", err
-		}
-		defer r.Close()
-	} else {
-		r = os.Stdin
+// processInput は引数、オプションを判定して計算し、出力する文字列を生成する。
+// 引数指定がない場合は標準入力を受け取る
+// 引数指定がある場合はファイル名としてファイル読み込みを実施
+func processInput(args []string, opts options.Options) ([]options.OutValues, error) {
+	if len(args) < 1 {
+		return processStdin(opts)
 	}
 
+	return processMultiInput(args, opts), nil
+}
+
+// processStdin は標準入力のデータを処理する。
+func processStdin(opts options.Options) ([]options.OutValues, error) {
+	r := os.Stdin
 	ov, err := calcOutValues(r, opts)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return opts.Format(ov), nil
+	return []options.OutValues{ov}, nil
+}
+
+// indexedFileName は処理し始めた順番を保持するファイル名。
+type indexedFileName struct {
+	index    int
+	fileName string
+}
+
+// processMultiInput は複数の入力ファイルを処理する。
+// CPUの数だけワーカースレッドを起動し、並列でデータを処理する。
+// FIXME goroutineの途中にエラーが発生してもエラーを返さない。
+// ログ出力はするが
+func processMultiInput(args []string, opts options.Options) []options.OutValues {
+	var wg sync.WaitGroup
+	q := make(chan indexedFileName, len(args))
+
+	// CPUの数だけワーカースレッドを起動
+	// 並列でファイルを開いて処理し、出力データ配列に追加する
+	ovs := make([]options.OutValues, len(args))
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go func(ovs []options.OutValues) {
+			defer wg.Done()
+			for {
+				// 入力ファイル名を受け取る
+				ifn, ok := <-q
+				if !ok {
+					return
+				}
+
+				fn := ifn.fileName
+				ov, err := arthio.WithOpen(fn, func(r io.Reader) (options.OutValues, error) {
+					return calcOutValues(r, opts)
+				})
+				if err != nil {
+					// 処理を計測してほしいのでpanicしない
+					logger.Println(err)
+				}
+
+				i := ifn.index
+				ovs[i] = ov
+			}
+		}(ovs)
+	}
+
+	// 処理対象のファイルパスをキューに送信
+	for i, fn := range args {
+		ifn := indexedFileName{
+			index:    i,
+			fileName: fn,
+		}
+		q <- ifn
+	}
+	close(q)
+	wg.Wait()
+
+	return ovs
 }
 
 // calcOutValues は入力から出力データを計算する。
@@ -72,10 +124,10 @@ func format(args []string, opts options.Options) (string, error) {
 // オプションSordedFlagが存在するとき、入力がすでにソート済みとして
 // ソート処理をスキップする。
 func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error) {
-	ov := options.OutValues{}
-	ns := make([]float64, 0)
+	ov := options.OutValues{} // 出力データ
+	ns := make([]float64, 0)  // 読み込んだ数値配列
 	var err error
-	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = calcMinMaxSumAvg(r, opts.MedianFlag)
+	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, opts.MedianFlag)
 	if err != nil {
 		return ov, err
 	}
@@ -86,56 +138,21 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 		if !opts.SordedFlag {
 			sort.Float64s(ns)
 		}
-		ov.Median = calcMedian(ns)
+		ov.Median = arthmath.Median(ns)
 	}
 	return ov, nil
 }
 
-// calcMinMaxSumAvg は入力から最小値、最大値、合計値、平均値を算出する
-// needValuesフラグがtrueのときは入力をfloat64スライスに変換した値も返す
-// needValuesフラグをセットしなければスライスは初期値のまま返却し、
-// スライスにデータを保持しないため省メモリになる
-func calcMinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg float64, ns []float64, err error) {
-	min = math.MaxFloat64 // 最初にでかい値を入れてないと判定されない
-	max = 0.0
-	sum = 0.0
-	avg = 0.0
-
-	// 入力をfloatに変換して都度計算
-	sc := bufio.NewScanner(r)
-	for sc.Scan() {
-		line := sc.Text()
-		line = strings.Trim(line, " ")
-		n, err := strconv.ParseFloat(line, 64)
-		if err != nil {
-			// 不正な文字列が存在しても後続の処理を継続してほしいのでcontinue
-			continue
+// out は行配列をオプションに応じて出力する。
+// 出力先ファイルが指定されていなければ標準出力する。
+// 指定がアレばファイル出力する。
+func out(lines []string, opts options.Options) error {
+	if opts.OutFile == "" {
+		for _, v := range lines {
+			fmt.Println(v)
 		}
-		min = math.Min(n, min)
-		max = math.Max(n, max)
-		sum += n
-		if needValues {
-			ns = append(ns, n)
-		}
-		cnt++
+		return nil
 	}
-	if cnt == 0 {
-		min = 0
-		return
-	}
-	avg = sum / float64(cnt)
-	err = sc.Err()
-	return
-}
 
-// calcMedian はfloat配列から中央値を算出する。
-func calcMedian(ns []float64) (med float64) {
-	l := len(ns)
-	if l <= 0 {
-		return 0.0
-	}
-	if l%2 == 1 {
-		return ns[l/2]
-	}
-	return ns[l/2-1]
+	return arthio.WriteFile(opts.OutFile, lines)
 }
