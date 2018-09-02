@@ -133,14 +133,29 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 		return ov, err
 	}
 
-	if opts.MedianFlag {
-		// SordedFlagがなければ、ソートを実行
-		// SordedFlagがあれば、ソート済みとしてソートはスキップ(高速化)
-		if !opts.SordedFlag {
+	sorted := false
+
+	// SordedFlagとsortedがfalse、ソートを実行
+	// ソート済みならソートをスキップ(高速化)
+	sortFunc := func() {
+		if !opts.SordedFlag && !sorted {
+			sorted = true
 			sort.Float64s(ns)
 		}
+	}
+
+	// 中央値
+	if opts.MedianFlag {
+		sortFunc()
 		ov.Median = arthmath.Median(ns)
 	}
+
+	// パーセンタイル値
+	if opts.Percentile != 0 {
+		sortFunc()
+		ov.Percentile = arthmath.Percentile(ns, opts.Percentile)
+	}
+
 	return ov, nil
 }
 

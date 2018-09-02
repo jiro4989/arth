@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	FileName      = "filename"
-	HeaderCount   = "count"
-	HeaderMin     = "min"
-	HeaderMax     = "max"
-	HeaderSum     = "sum"
-	HeaderAverage = "avg"
-	HeaderMedian  = "median"
+	FileName         = "filename"
+	HeaderCount      = "count"
+	HeaderMin        = "min"
+	HeaderMax        = "max"
+	HeaderSum        = "sum"
+	HeaderAverage    = "avg"
+	HeaderMedian     = "median"
+	HeaderPercentile = "percentile"
 )
 
 // Options はコマンドラインオプション引数です。
@@ -28,6 +29,7 @@ type Options struct {
 	SumFlag        bool   `long:"sum" description:"合計を出力する"`
 	AverageFlag    bool   `long:"avg" description:"平均値を出力する"`
 	MedianFlag     bool   `short:"m" long:"median" description:"中央値を出力する"`
+	Percentile     int    `short:"p" long:"percentile" description:"パーセンタイル値を出力する"`
 	SordedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
 	NoHeaderFlag   bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
 	Delimiter      string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
@@ -36,13 +38,14 @@ type Options struct {
 
 // OutValues はFormat関数で使用する値構造体です。
 type OutValues struct {
-	FileName string
-	Count    int
-	Min      float64
-	Max      float64
-	Sum      float64
-	Average  float64
-	Median   float64
+	FileName   string
+	Count      int
+	Min        float64
+	Max        float64
+	Sum        float64
+	Average    float64
+	Median     float64
+	Percentile float64
 }
 
 // Parse はコマンドラインオプションを解析する。
@@ -78,6 +81,8 @@ func (o *Options) Setup() {
 
 // Format は出力用のデータをオプションに応じて出力ように整形する。
 func Format(vs []OutValues, opts Options) []string {
+	percentileHeader := fmt.Sprintf("%d%s", opts.Percentile, HeaderPercentile)
+
 	maps := make([]map[string]string, len(vs))
 	for i, v := range vs {
 		m := make(map[string]string) // 値
@@ -113,6 +118,8 @@ func Format(vs []OutValues, opts Options) []string {
 		setFunc(opts.AverageFlag, HeaderAverage, v.Average)
 		setFunc(opts.MedianFlag, HeaderMedian, v.Median)
 
+		setFunc(0 < opts.Percentile, percentileHeader, v.Percentile)
+
 		maps[i] = m
 	}
 
@@ -130,6 +137,7 @@ func Format(vs []OutValues, opts Options) []string {
 		HeaderSum,
 		HeaderAverage,
 		HeaderMedian,
+		percentileHeader,
 	} {
 		if m[k] != "" {
 			headers = append(headers, k)

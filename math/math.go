@@ -46,7 +46,7 @@ func MinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg flo
 }
 
 // Median はfloat配列から中央値を算出する。
-func Median(ns []float64) (med float64) {
+func Median(ns []float64) float64 {
 	l := len(ns)
 	if l <= 0 {
 		return 0.0
@@ -55,4 +55,22 @@ func Median(ns []float64) (med float64) {
 		return ns[l/2]
 	}
 	return ns[l/2-1]
+}
+
+// Percentile はパーセンタイル値を計算する。
+func Percentile(ns []float64, n int) float64 {
+	if n <= 0 {
+		return 0.0
+	}
+
+	l := len(ns)
+	if l <= 0 {
+		return 0.0
+	}
+
+	i := l*n/100 - 1
+	if i < 0 {
+		i = 0
+	}
+	return ns[i]
 }
