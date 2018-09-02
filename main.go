@@ -127,20 +127,20 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error) {
 	ov := options.OutValues{} // 出力データ
 	ns := make([]float64, 0)  // 読み込んだ数値配列
+	// ソートのためにデータを控えておくかフラグ
+	needValues := opts.MedianFlag || 0 < opts.Percentile
 	var err error
-	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, opts.MedianFlag)
+	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, needValues)
 	if err != nil {
 		return ov, err
 	}
 
-	sorted := false
-
 	// SordedFlagとsortedがfalse、ソートを実行
 	// ソート済みならソートをスキップ(高速化)
 	sortFunc := func() {
-		if !opts.SordedFlag && !sorted {
-			sorted = true
+		if !opts.SordedFlag {
 			sort.Float64s(ns)
+			opts.SordedFlag = true
 		}
 	}
 
@@ -151,7 +151,7 @@ func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error)
 	}
 
 	// パーセンタイル値
-	if opts.Percentile != 0 {
+	if 0 < opts.Percentile {
 		sortFunc()
 		ov.Percentile = arthmath.Percentile(ns, opts.Percentile)
 	}

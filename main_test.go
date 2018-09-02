@@ -88,44 +88,137 @@ func TestProcessStdin(t *testing.T) {
 	}, o)
 }
 
+type TestProcessMultiInputData struct {
+	args []string
+	opts options.Options
+	out  []options.OutValues
+}
+
 func TestProcessMultiInput(t *testing.T) {
-	args := []string{
-		"testdata/bigdata.txt",
-		"testdata/normal_num.txt",
-	}
-	opts := options.Options{
-		CountFlag:    true,
-		MinFlag:      true,
-		MaxFlag:      true,
-		SumFlag:      true,
-		AverageFlag:  true,
-		MedianFlag:   true,
-		SordedFlag:   false,
-		NoHeaderFlag: false,
-		Delimiter:    "\t",
-		OutFile:      "",
-	}
-	o := processMultiInput(args, opts)
-	assert.Equal(t, []options.OutValues{
-		options.OutValues{
-			FileName: "testdata/bigdata.txt",
-			Count:    100,
-			Min:      1,
-			Max:      100,
-			Sum:      5050,
-			Average:  50.5,
-			Median:   50,
+	tds := []TestProcessMultiInputData{
+		TestProcessMultiInputData{
+			args: []string{
+				"testdata/bigdata.txt",
+				"testdata/normal_num.txt",
+			},
+			opts: options.Options{
+				CountFlag:    true,
+				MinFlag:      true,
+				MaxFlag:      true,
+				SumFlag:      true,
+				AverageFlag:  true,
+				MedianFlag:   true,
+				SordedFlag:   false,
+				NoHeaderFlag: false,
+				Delimiter:    "\t",
+				OutFile:      "",
+			},
+			out: []options.OutValues{
+				options.OutValues{
+					FileName: "testdata/bigdata.txt",
+					Count:    100,
+					Min:      1,
+					Max:      100,
+					Sum:      5050,
+					Average:  50.5,
+					Median:   50,
+				},
+				options.OutValues{
+					FileName: "testdata/normal_num.txt",
+					Count:    5,
+					Min:      1,
+					Max:      5,
+					Sum:      15,
+					Average:  3,
+					Median:   3,
+				},
+			},
 		},
-		options.OutValues{
-			FileName: "testdata/normal_num.txt",
-			Count:    5,
-			Min:      1,
-			Max:      5,
-			Sum:      15,
-			Average:  3,
-			Median:   3,
+		TestProcessMultiInputData{
+			args: []string{
+				"testdata/bigdata.txt",
+				"testdata/normal_num.txt",
+			},
+			opts: options.Options{
+				CountFlag:    true,
+				MinFlag:      true,
+				MaxFlag:      true,
+				SumFlag:      true,
+				AverageFlag:  true,
+				MedianFlag:   true,
+				SordedFlag:   false,
+				NoHeaderFlag: false,
+				Percentile:   95,
+				Delimiter:    "\t",
+				OutFile:      "",
+			},
+			out: []options.OutValues{
+				options.OutValues{
+					FileName:   "testdata/bigdata.txt",
+					Count:      100,
+					Min:        1,
+					Max:        100,
+					Sum:        5050,
+					Average:    50.5,
+					Median:     50,
+					Percentile: 95,
+				},
+				options.OutValues{
+					FileName:   "testdata/normal_num.txt",
+					Count:      5,
+					Min:        1,
+					Max:        5,
+					Sum:        15,
+					Average:    3,
+					Median:     3,
+					Percentile: 4,
+				},
+			},
 		},
-	}, o)
+		TestProcessMultiInputData{
+			args: []string{
+				"testdata/bigdata.txt",
+				"testdata/normal_num.txt",
+			},
+			opts: options.Options{
+				CountFlag:    true,
+				MinFlag:      true,
+				MaxFlag:      true,
+				SumFlag:      true,
+				AverageFlag:  true,
+				MedianFlag:   false,
+				SordedFlag:   false,
+				NoHeaderFlag: false,
+				Percentile:   95,
+				Delimiter:    "\t",
+				OutFile:      "",
+			},
+			out: []options.OutValues{
+				options.OutValues{
+					FileName:   "testdata/bigdata.txt",
+					Count:      100,
+					Min:        1,
+					Max:        100,
+					Sum:        5050,
+					Average:    50.5,
+					Percentile: 95,
+				},
+				options.OutValues{
+					FileName:   "testdata/normal_num.txt",
+					Count:      5,
+					Min:        1,
+					Max:        5,
+					Sum:        15,
+					Average:    3,
+					Percentile: 4,
+				},
+			},
+		},
+	}
+	for _, v := range tds {
+		o := processMultiInput(v.args, v.opts)
+		assert.Equal(t, v.out, o)
+	}
 }
 
 func TestCalcOutValues(t *testing.T) {

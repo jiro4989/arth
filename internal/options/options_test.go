@@ -254,6 +254,45 @@ func TestFormat(t *testing.T) {
 		TestFormatData{
 			ovs: []OutValues{
 				OutValues{
+					Count:      2,
+					Min:        1.0,
+					Max:        2.0,
+					Sum:        3.0,
+					Average:    1.5,
+					Median:     1.0,
+					Percentile: 4.0,
+				},
+				OutValues{
+					Count:      100,
+					Min:        1.0,
+					Max:        2.0,
+					Sum:        3.0,
+					Average:    1.5,
+					Median:     1.0,
+					Percentile: 95.0,
+				},
+			},
+			opts: Options{
+				CountFlag:    true,
+				MinFlag:      true,
+				MaxFlag:      true,
+				SumFlag:      true,
+				AverageFlag:  true,
+				MedianFlag:   true,
+				SordedFlag:   false,
+				NoHeaderFlag: false,
+				Percentile:   95,
+				Delimiter:    "\t",
+			},
+			out: []string{
+				"count\tmin\tmax\tsum\tavg\tmedian\t95percentile",
+				"2\t1\t2\t3\t1.5\t1\t4",
+				"100\t1\t2\t3\t1.5\t1\t95",
+			},
+		},
+		TestFormatData{
+			ovs: []OutValues{
+				OutValues{
 					Count:   2,
 					Min:     1.0,
 					Max:     2.0,
