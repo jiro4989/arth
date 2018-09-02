@@ -2,8 +2,10 @@ package math
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -26,6 +28,8 @@ func MinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg flo
 		n, err := strconv.ParseFloat(line, 64)
 		if err != nil {
 			// 不正な文字列が存在しても後続の処理を継続してほしいのでcontinue
+			msg := fmt.Sprintf("warn: illegal value. value=%v", line)
+			fmt.Fprintln(os.Stderr, msg)
 			continue
 		}
 		min = math.Min(n, min)
