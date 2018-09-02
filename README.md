@@ -9,9 +9,38 @@
 
 毎回awkで計算するのもアホらしいのでCLIにしてみた。
 
+## インストール方法
+
+`go get github.com/jiro4989/arth`
+
 ## 使い方
 
-### ヘルプ
+```time.list
+1
+4
+2
+5
+3
+```
+
+```bash
+arth time.list
+# 出力
+# count	min	max	sum	avg
+# 5	1	5	15	3
+```
+
+### 複数ファイル指定
+
+```bash
+$ arth -m testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
+count	min	max	sum	avg	median
+6000000	1	6000000	18000003000000	3000000.5	3000000
+5	1	5	15	3	3
+100	1	100	5050	50.5	50
+```
+
+## ヘルプ
 
 `arth -h`
 
@@ -33,27 +62,6 @@
 
     Help Options:
       -h, --help       Show this help message
-
-### 仕様例
-
-```time.list
-1
-4
-2
-5
-3
-```
-
-```bash
-arth time.list
-# 出力
-# count	min	max	sum	avg
-# 5	1	5	15	3
-```
-
-## インストール方法
-
-`go get github.com/jiro4989/arth`
 
 ## 仕様
 
