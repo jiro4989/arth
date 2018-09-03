@@ -111,7 +111,7 @@ func TestParse(t *testing.T) {
 				AverageFlag:    true,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			outargs: []string{},
@@ -129,7 +129,7 @@ func TestParse(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			outargs: []string{},
@@ -148,7 +148,7 @@ func TestParse(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			outargs: []string{"testdata"},
@@ -170,7 +170,7 @@ func TestParse(t *testing.T) {
 				AverageFlag:    true,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 				SeparatableFilePath: []SeparatableFilePath{
 					SeparatableFilePath{
@@ -199,7 +199,7 @@ func TestParse(t *testing.T) {
 		assert.Equal(t, v.outopts.AverageFlag, opts.AverageFlag)
 		assert.Equal(t, v.outopts.MedianFlag, opts.MedianFlag)
 		assert.Equal(t, v.outopts.SortedFlag, opts.SortedFlag)
-		assert.Equal(t, v.outopts.NoHeaderFlag, opts.NoHeaderFlag)
+		assert.Equal(t, v.outopts.HeaderFlag, opts.HeaderFlag)
 		assert.Equal(t, v.outopts.InputDelimiter, opts.InputDelimiter)
 		assert.Equal(t, v.outargs, args)
 	}
@@ -216,7 +216,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			expect: Options{
@@ -227,7 +227,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    true,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 		},
@@ -240,7 +240,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			expect: Options{
@@ -251,7 +251,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     false,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 		},
@@ -264,7 +264,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     true,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			expect: Options{
@@ -275,7 +275,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    false,
 				MedianFlag:     false,
 				SortedFlag:     true,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 		},
@@ -288,7 +288,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    true,
 				MedianFlag:     false,
 				SortedFlag:     true,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 			expect: Options{
@@ -299,7 +299,7 @@ func TestSetup(t *testing.T) {
 				AverageFlag:    true,
 				MedianFlag:     false,
 				SortedFlag:     true,
-				NoHeaderFlag:   false,
+				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
 		},
@@ -313,7 +313,7 @@ func TestSetup(t *testing.T) {
 		assert.Equal(t, v.expect.AverageFlag, v.in.AverageFlag)
 		assert.Equal(t, v.expect.MedianFlag, v.in.MedianFlag)
 		assert.Equal(t, v.expect.SortedFlag, v.in.SortedFlag)
-		assert.Equal(t, v.expect.NoHeaderFlag, v.in.NoHeaderFlag)
+		assert.Equal(t, v.expect.HeaderFlag, v.in.HeaderFlag)
 		assert.Equal(t, v.expect.InputDelimiter, v.in.InputDelimiter)
 	}
 }
@@ -355,13 +355,12 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				Percentile:      95,
 				InputDelimiter:  "\t",
 				OutputDelimiter: "\t",
 			},
 			out: []string{
-				"count\tmin\tmax\tsum\tavg\t95percentile",
 				"2\t1\t2\t3\t1.5\t4",
 				"100\t1\t2\t3\t1.5\t95",
 			},
@@ -395,13 +394,12 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      true,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				Percentile:      95,
 				InputDelimiter:  "\t",
 				OutputDelimiter: ",",
 			},
 			out: []string{
-				"count,min,max,sum,avg,median,95percentile",
 				"2,1,2,3,1.5,1,4",
 				"100,1,2,3,1.5,1,95",
 			},
@@ -433,12 +431,11 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				InputDelimiter:  "\t",
 				OutputDelimiter: "\t",
 			},
 			out: []string{
-				"count\tmin\tmax\tsum\tavg",
 				"2\t1\t2\t3\t1.5",
 				"100\t1\t2\t3\t1.5",
 			},
@@ -472,12 +469,11 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				InputDelimiter:  "\t",
 				OutputDelimiter: "\t",
 			},
 			out: []string{
-				"filename\tcount\tmin\tmax\tsum\tavg",
 				"foo.txt\t2\t1\t2\t3\t1.5",
 				"bar.txt\t100\t1\t2\t3\t1.5",
 			},
@@ -512,12 +508,11 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				InputDelimiter:  "\t",
 				OutputDelimiter: "\t",
 			},
 			out: []string{
-				"count\tmin\tmax\tsum\tavg",
 				"2\t1\t2\t3\t1.5",
 				"100\t1\t2\t3\t1.5",
 			},
@@ -541,12 +536,11 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				InputDelimiter:  "\t",
 				OutputDelimiter: "\t",
 			},
 			out: []string{
-				"count\tmin\tmax\tsum\tavg",
 				"2\t1\t2\t3\t1.5",
 			},
 		},
@@ -569,12 +563,11 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    false,
+				HeaderFlag:      false,
 				InputDelimiter:  ",",
 				OutputDelimiter: ",",
 			},
 			out: []string{
-				"count,min,max,sum,avg",
 				"2,1,2,3,1.5",
 			},
 		},
@@ -597,11 +590,12 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    true,
+				HeaderFlag:      true,
 				InputDelimiter:  ",",
 				OutputDelimiter: ",",
 			},
 			out: []string{
+				"count,min,max,sum,avg",
 				"2,1,2,3,1.5",
 			},
 		},
@@ -624,11 +618,12 @@ func TestFormat(t *testing.T) {
 				AverageFlag:     true,
 				MedianFlag:      false,
 				SortedFlag:      false,
-				NoHeaderFlag:    true,
+				HeaderFlag:      true,
 				InputDelimiter:  ",",
 				OutputDelimiter: ",",
 			},
 			out: []string{
+				"min,sum,avg",
 				"1,3,1.5",
 			},
 		},

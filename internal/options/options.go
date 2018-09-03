@@ -21,6 +21,25 @@ const (
 	HeaderPercentile = "percentile"
 )
 
+// Options はコマンドラインオプション引数です。
+type Options struct {
+	Version             func()                `short:"v" long:"version" description:"バージョン情報"`
+	NoFileNameFlag      bool                  `long:"nofilename" description:"入力元ファイル名を出力しない"`
+	CountFlag           bool                  `long:"count" description:"データ数を出力する"`
+	MinFlag             bool                  `long:"min" description:"最小値を出力する"`
+	MaxFlag             bool                  `long:"max" description:"最大値を出力する"`
+	SumFlag             bool                  `long:"sum" description:"合計を出力する"`
+	AverageFlag         bool                  `long:"avg" description:"平均値を出力する"`
+	MedianFlag          bool                  `short:"m" long:"median" description:"中央値を出力する"`
+	Percentile          int                   `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
+	SortedFlag          bool                  `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
+	HeaderFlag          bool                  `long:"header" description:"ヘッダを出力する"`
+	InputDelimiter      string                `short:"d" long:"indelimiter" description:"入力の区切り文字を指定" default:"\t"`
+	OutputDelimiter     string                `short:"D" long:"outdelimiter" description:"出力の区切り文字を指定" default:"\t"`
+	OutFile             string                `short:"o" long:"outfile" description:"出力ファイルパス"`
+	SeparatableFilePath []SeparatableFilePath `short:"f" long:"fieldfilepath" description:"複数フィールド持つファイルと、その区切り位置指定(N:filepath)"`
+}
+
 type SeparatableFilePath struct {
 	FieldIndex int
 	FilePath   string
@@ -72,25 +91,6 @@ func (s *SeparatableFilePath) UnmarshalFlag(v string) error {
 
 func (s SeparatableFilePath) MarshalFlag() (string, error) {
 	return fmt.Sprintf("%d:%s", s.FieldIndex, s.FilePath), nil
-}
-
-// Options はコマンドラインオプション引数です。
-type Options struct {
-	Version             func()                `short:"v" long:"version" description:"バージョン情報"`
-	NoFileNameFlag      bool                  `long:"nofilename" description:"入力元ファイル名を出力しない"`
-	CountFlag           bool                  `long:"count" description:"データ数を出力する"`
-	MinFlag             bool                  `long:"min" description:"最小値を出力する"`
-	MaxFlag             bool                  `long:"max" description:"最大値を出力する"`
-	SumFlag             bool                  `long:"sum" description:"合計を出力する"`
-	AverageFlag         bool                  `long:"avg" description:"平均値を出力する"`
-	MedianFlag          bool                  `short:"m" long:"median" description:"中央値を出力する"`
-	Percentile          int                   `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
-	SortedFlag          bool                  `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
-	NoHeaderFlag        bool                  `short:"n" long:"noheader" description:"ヘッダを出力しない"`
-	InputDelimiter      string                `short:"d" long:"indelimiter" description:"入力の区切り文字を指定" default:"\t"`
-	OutputDelimiter     string                `short:"D" long:"outdelimiter" description:"出力の区切り文字を指定" default:"\t"`
-	OutFile             string                `short:"o" long:"outfile" description:"出力ファイルパス"`
-	SeparatableFilePath []SeparatableFilePath `short:"f" long:"fieldfilepath" description:"複数フィールド持つファイルと、その区切り位置指定(N:filepath)"`
 }
 
 // OutValues はFormat関数で使用する値構造体です。
@@ -217,7 +217,7 @@ func Format(vs []OutValues, opts Options) []string {
 	}
 
 	s := strings.Join(headers, opts.OutputDelimiter)
-	if !opts.NoHeaderFlag {
+	if opts.HeaderFlag {
 		lines = append(lines, s)
 	}
 
