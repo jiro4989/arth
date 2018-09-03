@@ -137,12 +137,20 @@ func Parse(version string) (Options, []string) {
 // Setup はオプションのデフォルト値をセットします。
 // Count, Min, Max, Sumのいずれもfalseの場合は、すべてtrueにする。
 func (o *Options) Setup() {
-	if !o.CountFlag && !o.MinFlag && !o.MaxFlag && !o.SumFlag && !o.AverageFlag {
+	if !o.CountFlag &&
+		!o.MinFlag &&
+		!o.MaxFlag &&
+		!o.SumFlag &&
+		!o.AverageFlag &&
+		!o.MedianFlag &&
+		o.Percentile <= 0 {
 		o.CountFlag = true
 		o.MinFlag = true
 		o.SumFlag = true
 		o.MaxFlag = true
 		o.AverageFlag = true
+		o.MedianFlag = true
+		o.Percentile = 95
 	}
 	if 100 < o.Percentile {
 		msg := fmt.Sprintf("warn: percentile is from 1 to 100. percentile=%d", o.Percentile)

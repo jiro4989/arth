@@ -102,26 +102,28 @@ func TestParse(t *testing.T) {
 		TestParseData{
 			args: []string{
 				"main.go",
+				"testdata", // ファイル名指定があるのでargsも変化
 			},
-			outopts: Options{
+			outopts: Options{ // 何も指定がないときは全部出力される
 				CountFlag:      true,
 				MinFlag:        true,
 				MaxFlag:        true,
 				SumFlag:        true,
 				AverageFlag:    true,
-				MedianFlag:     false,
+				MedianFlag:     true,
+				Percentile:     95,
 				SortedFlag:     false,
 				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
-			outargs: []string{},
+			outargs: []string{"testdata"},
 		},
 		TestParseData{
 			args: []string{
 				"main.go",
 				"--count",
 			},
-			outopts: Options{
+			outopts: Options{ // 1つでも指定したら他のはtrueにならない
 				CountFlag:      true,
 				MinFlag:        false,
 				MaxFlag:        false,
@@ -137,21 +139,22 @@ func TestParse(t *testing.T) {
 		TestParseData{
 			args: []string{
 				"main.go",
-				"--min",
-				"testdata",
+				"-p",
+				"90",
 			},
-			outopts: Options{
+			outopts: Options{ // パーセンタイル値も同様
 				CountFlag:      false,
-				MinFlag:        true,
+				MinFlag:        false,
 				MaxFlag:        false,
 				SumFlag:        false,
 				AverageFlag:    false,
 				MedianFlag:     false,
+				Percentile:     90,
 				SortedFlag:     false,
 				HeaderFlag:     false,
 				InputDelimiter: "\t",
 			},
-			outargs: []string{"testdata"},
+			outargs: []string{},
 		},
 		TestParseData{ // -f で上書きされる
 			args: []string{
@@ -168,7 +171,8 @@ func TestParse(t *testing.T) {
 				MaxFlag:        true,
 				SumFlag:        true,
 				AverageFlag:    true,
-				MedianFlag:     false,
+				MedianFlag:     true,
+				Percentile:     95,
 				SortedFlag:     false,
 				HeaderFlag:     false,
 				InputDelimiter: "\t",
@@ -208,99 +212,41 @@ func TestParse(t *testing.T) {
 func TestSetup(t *testing.T) {
 	tds := []testdata{
 		testdata{
-			in: Options{
-				CountFlag:      false,
-				MinFlag:        false,
-				MaxFlag:        false,
-				SumFlag:        false,
-				AverageFlag:    false,
-				MedianFlag:     false,
-				SortedFlag:     false,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
-			},
-			expect: Options{
-				CountFlag:      true,
-				MinFlag:        true,
-				MaxFlag:        true,
-				SumFlag:        true,
-				AverageFlag:    true,
-				MedianFlag:     false,
-				SortedFlag:     false,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+			in: Options{},
+			expect: Options{ // 全部未指定ならtrueになる
+				CountFlag:   true,
+				MinFlag:     true,
+				MaxFlag:     true,
+				SumFlag:     true,
+				AverageFlag: true,
+				MedianFlag:  true,
+				Percentile:  95,
 			},
 		},
 		testdata{
-			in: Options{
-				CountFlag:      true,
-				MinFlag:        false,
-				MaxFlag:        false,
-				SumFlag:        false,
-				AverageFlag:    false,
-				MedianFlag:     false,
-				SortedFlag:     false,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+			in: Options{ // 1つでも指定したらtrueにならない
+				CountFlag: true,
+				SumFlag:   true,
 			},
 			expect: Options{
-				CountFlag:      true,
-				MinFlag:        false,
-				MaxFlag:        false,
-				SumFlag:        false,
-				AverageFlag:    false,
-				MedianFlag:     false,
-				SortedFlag:     false,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+				CountFlag: true,
+				SumFlag:   true,
 			},
 		},
 		testdata{
-			in: Options{
-				CountFlag:      false,
-				MinFlag:        true,
-				MaxFlag:        false,
-				SumFlag:        true,
-				AverageFlag:    false,
-				MedianFlag:     false,
-				SortedFlag:     true,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+			in: Options{ // 95パーセンタイル値でも同様
+				Percentile: 80,
 			},
 			expect: Options{
-				CountFlag:      false,
-				MinFlag:        true,
-				MaxFlag:        false,
-				SumFlag:        true,
-				AverageFlag:    false,
-				MedianFlag:     false,
-				SortedFlag:     true,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+				Percentile: 80,
 			},
 		},
 		testdata{
-			in: Options{
-				CountFlag:      true,
-				MinFlag:        true,
-				MaxFlag:        true,
-				SumFlag:        true,
-				AverageFlag:    true,
-				MedianFlag:     false,
-				SortedFlag:     true,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+			in: Options{ // 上限値100を超えると100になおす
+				Percentile: 9999,
 			},
 			expect: Options{
-				CountFlag:      true,
-				MinFlag:        true,
-				MaxFlag:        true,
-				SumFlag:        true,
-				AverageFlag:    true,
-				MedianFlag:     false,
-				SortedFlag:     true,
-				HeaderFlag:     false,
-				InputDelimiter: "\t",
+				Percentile: 100,
 			},
 		},
 	}
