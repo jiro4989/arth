@@ -40,6 +40,20 @@ testdata/normal_num.txt	5	1	5	15	3	3	4
 testdata/bigdata.txt	100	1	100	5050	50.5	50	95
 ```
 
+### フィールド指定
+
+`\d:filepath`と指定することで、カラム指定でファイルを読み込める。
+
+```bash
+$ arth -m -p 95 -d , -f 2:testdata/sample.csv -f 3:testdata/sample.csv -f testdata/bench.txt
+warn: illegal value. value=score
+warn: illegal value. value=ok
+filename	count	min	max	sum	avg	median	95percentile
+testdata/sample.csv	5	70	90	400	80	77	88
+testdata/sample.csv	5	80	80	400	80	80	80
+testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
+```
+
 ## ヘルプ
 
 `arth -h`
