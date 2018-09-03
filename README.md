@@ -62,22 +62,24 @@ testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
       arth [OPTIONS]
 
     Application Options:
-      -v, --version     バージョン情報
-          --nofilename  入力元ファイル名を出力しない
-          --count       データ数を出力する
-          --min         最小値を出力する
-          --max         最大値を出力する
-          --sum         合計を出力する
-          --avg         平均値を出力する
-      -m, --median      中央値を出力する
-      -p, --percentile= パーセンタイル値を出力する
-      -s, --sorted      入力元データがソート済みフラグ
-      -n, --noheader    ヘッダを出力しない
-      -d, --delimiter=  出力時の区切り文字を指定 (default: "\t")
-      -o, --outfile=    出力ファイルパス
+      -v, --version        バージョン情報
+          --nofilename     入力元ファイル名を出力しない
+          --count          データ数を出力する
+          --min            最小値を出力する
+          --max            最大値を出力する
+          --sum            合計を出力する
+          --avg            平均値を出力する
+      -m, --median         中央値を出力する
+      -p, --percentile=    パーセンタイル値を出力する(1~100)
+      -s, --sorted         入力元データがソート済みフラグ
+      -n, --noheader       ヘッダを出力しない
+      -d, --indelimiter=   入力の区切り文字を指定 (default: "\t")
+      -D, --outdelimiter=  出力の区切り文字を指定 (default: "\t")
+      -o, --outfile=       出力ファイルパス
+      -f, --fieldfilepath= TODO
 
     Help Options:
-      -h, --help        Show this help message
+      -h, --help           Show this help message
 
 ## 仕様
 
