@@ -9,93 +9,143 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type TestMinMaxSumAvgData struct {
+	inR          io.Reader
+	inNeedValues bool
+	inF          func(string) string
+	outCount     int
+	outMin       float64
+	outMax       float64
+	outSum       float64
+	outAvg       float64
+	outNs        []float64
+}
+
 func TestMinMaxSumAvg(t *testing.T) {
-	f := func(s string) io.Reader {
-		return bytes.NewBufferString(s)
+	f := func(s ...string) io.Reader {
+		return bytes.NewBufferString(strings.Join(s, "\n"))
 	}
 
-	cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(f("1.0\n2.0\n3.0\n4.0\n5.0\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 5, cnt)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 15.0, sum)
-	assert.Equal(t, 3.0, avg)
-	assert.Equal(t, 0, len(ns))
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("5.0\n4.0\n3.0\n2.0\n1.0\n"), true, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 15.0, sum)
-	assert.Equal(t, 3.0, avg)
-	assert.EqualValues(t, []float64{5.0, 4.0, 3.0, 2.0, 1.0}, ns)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 15.0, sum)
-	assert.Equal(t, 3.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 15.0, sum)
-	assert.Equal(t, 3.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("foobar\n4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 5, cnt)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 15.0, sum)
-	assert.Equal(t, 3.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, cnt)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 1.0, max)
-	assert.Equal(t, 1.0, sum)
-	assert.Equal(t, 1.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n2.0\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, cnt)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 2.0, max)
-	assert.Equal(t, 3.0, sum)
-	assert.Equal(t, 1.5, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("\n"), false, nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 0, cnt)
-	assert.Equal(t, 0.0, min)
-	assert.Equal(t, 0.0, max)
-	assert.Equal(t, 0.0, sum)
-	assert.Equal(t, 0.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("val1,val2\n1,2\n3,4\n5,6\n"), false, func(s string) string {
-		return strings.Split(s, ",")[0]
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, 3, cnt)
-	assert.Equal(t, 1.0, min)
-	assert.Equal(t, 5.0, max)
-	assert.Equal(t, 9.0, sum)
-	assert.Equal(t, 3.0, avg)
-
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("val1,val2\n1,2\n3,4\n5,6\n"), false, func(s string) string {
-		return strings.Split(s, ",")[1]
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, 3, cnt)
-	assert.Equal(t, 2.0, min)
-	assert.Equal(t, 6.0, max)
-	assert.Equal(t, 12.0, sum)
-	assert.Equal(t, 4.0, avg)
+	tds := []TestMinMaxSumAvgData{
+		TestMinMaxSumAvgData{ // ソート不要のとき、nsが空になる
+			inR: f(
+				"1.0",
+				"2.0",
+				"3.0",
+				"4.0",
+				"5.0",
+			),
+			inNeedValues: false,
+			inF:          nil,
+			outCount:     5,
+			outMin:       1.0,
+			outMax:       5.0,
+			outSum:       15.0,
+			outAvg:       3.0,
+			outNs:        nil,
+		},
+		TestMinMaxSumAvgData{ // ソートされてないデータとソート必要フラグ。読み取ったデータを返却
+			inR: f(
+				"1.0",
+				"5.0",
+				"4.0",
+				"3.0",
+				"2.0",
+			),
+			inNeedValues: true,
+			inF:          nil,
+			outCount:     5,
+			outMin:       1.0,
+			outMax:       5.0,
+			outSum:       15.0,
+			outAvg:       3.0,
+			outNs:        []float64{1, 5, 4, 3, 2},
+		},
+		TestMinMaxSumAvgData{ // 不正なデータがあってもエラーを無視すること
+			inR: f(
+				"1.0",
+				"5.0",
+				"4.0",
+				"a",
+				"3.0",
+				"2.0",
+			),
+			inNeedValues: true,
+			inF:          nil,
+			outCount:     5,
+			outMin:       1.0,
+			outMax:       5.0,
+			outSum:       15.0,
+			outAvg:       3.0,
+			outNs:        []float64{1, 5, 4, 3, 2},
+		},
+		TestMinMaxSumAvgData{ // データが1つだけ
+			inR: f(
+				"1.0",
+			),
+			inNeedValues: true,
+			inF:          nil,
+			outCount:     1,
+			outMin:       1.0,
+			outMax:       1.0,
+			outSum:       1.0,
+			outAvg:       1.0,
+			outNs:        []float64{1.0},
+		},
+		TestMinMaxSumAvgData{ // データが0
+			inR:          f(),
+			inNeedValues: true,
+			inF:          nil,
+			outCount:     0,
+			outMin:       0.0,
+			outMax:       0.0,
+			outSum:       0.0,
+			outAvg:       0.0,
+			outNs:        nil,
+		},
+		TestMinMaxSumAvgData{ // 空データのみ
+			inR: f(
+				"",
+				"",
+			),
+			inNeedValues: true,
+			inF:          nil,
+			outCount:     0,
+			outMin:       0.0,
+			outMax:       0.0,
+			outSum:       0.0,
+			outAvg:       0.0,
+			outNs:        nil,
+		},
+		TestMinMaxSumAvgData{ // 関数適用確認
+			inR: f(
+				"val1,val2",
+				"1,2",
+				"3,4",
+				"5,6",
+			),
+			inNeedValues: true,
+			inF: func(s string) string {
+				return strings.Split(s, ",")[0]
+			},
+			outCount: 3,
+			outMin:   1.0,
+			outMax:   5.0,
+			outSum:   9.0,
+			outAvg:   3.0,
+			outNs:    []float64{1, 3, 5},
+		},
+	}
+	for _, v := range tds {
+		cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(v.inR, v.inNeedValues, v.inF)
+		assert.NoError(t, err)
+		assert.Equal(t, v.outCount, cnt)
+		assert.Equal(t, v.outMin, min)
+		assert.Equal(t, v.outMax, max)
+		assert.Equal(t, v.outSum, sum)
+		assert.Equal(t, v.outAvg, avg)
+		assert.EqualValues(t, v.outNs, ns)
+	}
 }
 
 func TestMedian(t *testing.T) {
