@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime"
 	"sort"
-	"strings"
 	"sync"
 
 	"github.com/jiro4989/arth/internal/options"
@@ -59,7 +58,13 @@ func processInput(args []string, opts options.Options) ([]options.OutValues, err
 // processStdin は標準入力のデータを処理する。
 func processStdin(opts options.Options) ([]options.OutValues, error) {
 	r := os.Stdin
-	ov, err := calcOutValues(r, opts, nil)
+	conf := arthmath.MinMaxSumAvgConfig{
+		NeedValues:       needValues(opts),
+		Delimiter:        opts.InputDelimiter,
+		FieldIndex:       1,
+		IgnoreHeaderRows: opts.IgnoreHeaderRows,
+	}
+	ov, err := calcOutValues(r, opts, conf)
 	if err != nil {
 		return nil, err
 	}
@@ -94,22 +99,22 @@ func processMultiInput(fns []string, opts options.Options) []options.OutValues {
 					return
 				}
 
-				f := func(s string) string {
-					if len(opts.SeparatableFilePath) < 1 {
-						return s
-					}
-					ss := strings.Split(s, opts.InputDelimiter)
-					if len(ss) <= 1 {
-						return s
-					}
-					// 値指定は1〜なので-1する
-					n := opts.SeparatableFilePath[ifn.index].FieldIndex - 1
-					return ss[n]
-				}
-
 				fn := ifn.fileName
 				ov, err := arthio.WithOpen(fn, func(r io.Reader) (options.OutValues, error) {
-					return calcOutValues(r, opts, f)
+					var n int
+					spath := opts.SeparatableFilePath
+					if len(spath) < 1 {
+						n = 1
+					} else {
+						n = spath[ifn.index].FieldIndex
+					}
+					conf := arthmath.MinMaxSumAvgConfig{
+						NeedValues:       needValues(opts),
+						Delimiter:        opts.InputDelimiter,
+						FieldIndex:       n,
+						IgnoreHeaderRows: opts.IgnoreHeaderRows,
+					}
+					return calcOutValues(r, opts, conf)
 				})
 				if err != nil {
 					// 処理を計測してほしいのでpanicしない
@@ -137,18 +142,21 @@ func processMultiInput(fns []string, opts options.Options) []options.OutValues {
 	return ovs
 }
 
+func needValues(opts options.Options) bool {
+	return opts.MedianFlag || 0 < opts.Percentile
+}
+
 // calcOutValues は入力から出力データを計算する。
 // オプションMedianFlagが存在するとき、ソートとソートデータの保持により
 // メモリ消費と計算時間が増加する。
 // オプションSortedFlagが存在するとき、入力がすでにソート済みとして
 // ソート処理をスキップする。
-func calcOutValues(r io.Reader, opts options.Options, f func(string) string) (options.OutValues, error) {
+func calcOutValues(r io.Reader, opts options.Options, conf arthmath.MinMaxSumAvgConfig) (options.OutValues, error) {
 	ov := options.OutValues{} // 出力データ
 	ns := make([]float64, 0)  // 読み込んだ数値配列
-	// ソートのためにデータを控えておくかフラグ
-	needValues := opts.MedianFlag || 0 < opts.Percentile
 	var err error
-	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, needValues, f)
+	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average,
+		ns, err = arthmath.MinMaxSumAvg(r, conf)
 	if err != nil {
 		return ov, err
 	}

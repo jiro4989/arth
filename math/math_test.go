@@ -10,15 +10,14 @@ import (
 )
 
 type TestMinMaxSumAvgData struct {
-	inR          io.Reader
-	inNeedValues bool
-	inF          func(string) string
-	outCount     int
-	outMin       float64
-	outMax       float64
-	outSum       float64
-	outAvg       float64
-	outNs        []float64
+	inR      io.Reader
+	inConf   MinMaxSumAvgConfig
+	outCount int
+	outMin   float64
+	outMax   float64
+	outSum   float64
+	outAvg   float64
+	outNs    []float64
 }
 
 func TestMinMaxSumAvg(t *testing.T) {
@@ -35,14 +34,13 @@ func TestMinMaxSumAvg(t *testing.T) {
 				"4.0",
 				"5.0",
 			),
-			inNeedValues: false,
-			inF:          nil,
-			outCount:     5,
-			outMin:       1.0,
-			outMax:       5.0,
-			outSum:       15.0,
-			outAvg:       3.0,
-			outNs:        nil,
+			inConf:   MinMaxSumAvgConfig{},
+			outCount: 5,
+			outMin:   1.0,
+			outMax:   5.0,
+			outSum:   15.0,
+			outAvg:   3.0,
+			outNs:    nil,
 		},
 		TestMinMaxSumAvgData{ // ソートされてないデータとソート必要フラグ。読み取ったデータを返却
 			inR: f(
@@ -52,14 +50,15 @@ func TestMinMaxSumAvg(t *testing.T) {
 				"3.0",
 				"2.0",
 			),
-			inNeedValues: true,
-			inF:          nil,
-			outCount:     5,
-			outMin:       1.0,
-			outMax:       5.0,
-			outSum:       15.0,
-			outAvg:       3.0,
-			outNs:        []float64{1, 5, 4, 3, 2},
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
+			outCount: 5,
+			outMin:   1.0,
+			outMax:   5.0,
+			outSum:   15.0,
+			outAvg:   3.0,
+			outNs:    []float64{1, 5, 4, 3, 2},
 		},
 		TestMinMaxSumAvgData{ // 不正なデータがあってもエラーを無視すること
 			inR: f(
@@ -70,63 +69,68 @@ func TestMinMaxSumAvg(t *testing.T) {
 				"3.0",
 				"2.0",
 			),
-			inNeedValues: true,
-			inF:          nil,
-			outCount:     5,
-			outMin:       1.0,
-			outMax:       5.0,
-			outSum:       15.0,
-			outAvg:       3.0,
-			outNs:        []float64{1, 5, 4, 3, 2},
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
+			outCount: 5,
+			outMin:   1.0,
+			outMax:   5.0,
+			outSum:   15.0,
+			outAvg:   3.0,
+			outNs:    []float64{1, 5, 4, 3, 2},
 		},
 		TestMinMaxSumAvgData{ // データが1つだけ
 			inR: f(
 				"1.0",
 			),
-			inNeedValues: true,
-			inF:          nil,
-			outCount:     1,
-			outMin:       1.0,
-			outMax:       1.0,
-			outSum:       1.0,
-			outAvg:       1.0,
-			outNs:        []float64{1.0},
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
+			outCount: 1,
+			outMin:   1.0,
+			outMax:   1.0,
+			outSum:   1.0,
+			outAvg:   1.0,
+			outNs:    []float64{1.0},
 		},
 		TestMinMaxSumAvgData{ // データが0
-			inR:          f(),
-			inNeedValues: true,
-			inF:          nil,
-			outCount:     0,
-			outMin:       0.0,
-			outMax:       0.0,
-			outSum:       0.0,
-			outAvg:       0.0,
-			outNs:        nil,
+			inR: f(),
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
+			outCount: 0,
+			outMin:   0.0,
+			outMax:   0.0,
+			outSum:   0.0,
+			outAvg:   0.0,
+			outNs:    nil,
 		},
 		TestMinMaxSumAvgData{ // 空データのみ
 			inR: f(
 				"",
 				"",
 			),
-			inNeedValues: true,
-			inF:          nil,
-			outCount:     0,
-			outMin:       0.0,
-			outMax:       0.0,
-			outSum:       0.0,
-			outAvg:       0.0,
-			outNs:        nil,
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
+			outCount: 0,
+			outMin:   0.0,
+			outMax:   0.0,
+			outSum:   0.0,
+			outAvg:   0.0,
+			outNs:    nil,
 		},
-		TestMinMaxSumAvgData{ // 関数適用確認
+		TestMinMaxSumAvgData{ // フィールド指定
 			inR: f(
 				"val1,val2",
 				"1,2",
 				"3,4",
 				"5,6",
 			),
-			inNeedValues: true,
-			inF: func(s string) string {
-				return strings.Split(s, ",")[0]
+			inConf: MinMaxSumAvgConfig{
+				NeedValues: true,
+				Delimiter:  ",",
+				FieldIndex: 1,
 			},
 			outCount: 3,
 			outMin:   1.0,
@@ -135,9 +139,49 @@ func TestMinMaxSumAvg(t *testing.T) {
 			outAvg:   3.0,
 			outNs:    []float64{1, 3, 5},
 		},
+		TestMinMaxSumAvgData{ // ヘッダ無視
+			inR: f(
+				"val1,val2",
+				"1,2",
+				"3,4",
+				"5,6",
+			),
+			inConf: MinMaxSumAvgConfig{
+				NeedValues:       true,
+				Delimiter:        ",",
+				FieldIndex:       1,
+				IgnoreHeaderRows: 1,
+			},
+			outCount: 3,
+			outMin:   1.0,
+			outMax:   5.0,
+			outSum:   9.0,
+			outAvg:   3.0,
+			outNs:    []float64{1, 3, 5},
+		},
+		TestMinMaxSumAvgData{ // ヘッダ2行無視
+			inR: f(
+				"val1,val2",
+				"1,2",
+				"3,4",
+				"5,6",
+			),
+			inConf: MinMaxSumAvgConfig{
+				NeedValues:       true,
+				Delimiter:        ",",
+				FieldIndex:       1,
+				IgnoreHeaderRows: 2,
+			},
+			outCount: 2,
+			outMin:   3.0,
+			outMax:   5.0,
+			outSum:   8.0,
+			outAvg:   4.0,
+			outNs:    []float64{3, 5},
+		},
 	}
 	for _, v := range tds {
-		cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(v.inR, v.inNeedValues, v.inF)
+		cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(v.inR, v.inConf)
 		assert.NoError(t, err)
 		assert.Equal(t, v.outCount, cnt)
 		assert.Equal(t, v.outMin, min)
@@ -145,6 +189,51 @@ func TestMinMaxSumAvg(t *testing.T) {
 		assert.Equal(t, v.outSum, sum)
 		assert.Equal(t, v.outAvg, avg)
 		assert.EqualValues(t, v.outNs, ns)
+	}
+}
+
+type TestCutFieldData struct {
+	inLine       string
+	inDelimiter  string
+	inFieldIndex int
+	out          string
+}
+
+func TestCutField(t *testing.T) {
+	tds := []TestCutFieldData{
+		TestCutFieldData{ // 正常系
+			inLine:       "id,name,note",
+			inDelimiter:  ",",
+			inFieldIndex: 1,
+			out:          "id",
+		},
+		TestCutFieldData{ // デリミタ不一致によるそのまま返却
+			inLine:       "id,name,note",
+			inDelimiter:  "\t",
+			inFieldIndex: 1,
+			out:          "id,name,note",
+		},
+		TestCutFieldData{ // 範囲外指定はそのまま返す
+			inLine:       "id,name,note",
+			inDelimiter:  ",",
+			inFieldIndex: 4,
+			out:          "id,name,note",
+		},
+		TestCutFieldData{ // 0以下はそのまま返す
+			inLine:       "id,name,note",
+			inDelimiter:  ",",
+			inFieldIndex: 0,
+			out:          "id,name,note",
+		},
+		TestCutFieldData{ // 空データはそのまま返す
+			inLine:       "",
+			inDelimiter:  ",",
+			inFieldIndex: 2,
+			out:          "",
+		},
+	}
+	for _, v := range tds {
+		assert.Equal(t, v.out, cutField(v.inLine, v.inDelimiter, v.inFieldIndex))
 	}
 }
 

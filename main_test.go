@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/jiro4989/arth/internal/options"
+	arthmath "github.com/jiro4989/arth/math"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -271,6 +272,40 @@ func TestProcessMultiInput(t *testing.T) {
 				},
 			},
 		},
+		TestProcessMultiInputData{
+			args: []string{
+				"testdata/sample.csv",
+			},
+			opts: options.Options{
+				CountFlag:      true,
+				MinFlag:        true,
+				MaxFlag:        true,
+				SumFlag:        true,
+				AverageFlag:    true,
+				MedianFlag:     false,
+				SortedFlag:     false,
+				HeaderFlag:     false,
+				Percentile:     95,
+				InputDelimiter: ",",
+				SeparatableFilePath: []options.SeparatableFilePath{
+					options.SeparatableFilePath{
+						FieldIndex: 2,
+						FilePath:   "testdata/sample.csv",
+					},
+				},
+			},
+			out: []options.OutValues{
+				options.OutValues{
+					FileName:   "testdata/sample.csv",
+					Count:      5,
+					Min:        70,
+					Max:        90,
+					Sum:        400,
+					Average:    80,
+					Percentile: 88,
+				},
+			},
+		},
 	}
 	for _, v := range tds {
 		o := processMultiInput(v.args, v.opts)
@@ -281,6 +316,7 @@ func TestProcessMultiInput(t *testing.T) {
 type TestCalcOutValuesData struct {
 	r    io.Reader
 	opts options.Options
+	conf arthmath.MinMaxSumAvgConfig
 	out  options.OutValues
 }
 
@@ -306,6 +342,9 @@ func TestCalcOutValues(t *testing.T) {
 				AverageFlag: true,
 				MedianFlag:  true,
 				Percentile:  95,
+			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
 			},
 			out: options.OutValues{
 				Count:      5,
@@ -333,6 +372,9 @@ func TestCalcOutValues(t *testing.T) {
 				AverageFlag: true,
 				MedianFlag:  true,
 			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
 			out: options.OutValues{
 				Count:   5,
 				Min:     1,
@@ -353,6 +395,9 @@ func TestCalcOutValues(t *testing.T) {
 			opts: options.Options{
 				CountFlag:  true,
 				Percentile: 95,
+			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
 			},
 			out: options.OutValues{
 				Count:      5,
@@ -395,6 +440,9 @@ func TestCalcOutValues(t *testing.T) {
 				MedianFlag: true,
 				Percentile: 95,
 			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
 			out: options.OutValues{
 				Count:      5,
 				Min:        1,
@@ -417,6 +465,9 @@ func TestCalcOutValues(t *testing.T) {
 				SortedFlag: true,
 				Percentile: 95,
 			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
 			out: options.OutValues{
 				Count:      5,
 				Min:        1,
@@ -438,6 +489,9 @@ func TestCalcOutValues(t *testing.T) {
 				SortedFlag: true,
 				MedianFlag: true,
 			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				NeedValues: true,
+			},
 			out: options.OutValues{
 				Count:   5,
 				Min:     1,
@@ -447,10 +501,64 @@ func TestCalcOutValues(t *testing.T) {
 				Median:  5,
 			},
 		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0,6",
+				"2.0,7",
+				"5.0,8",
+				"3.0,9",
+				"4.0,10",
+			),
+			opts: options.Options{
+				SortedFlag: true,
+				MedianFlag: true,
+			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				Delimiter:        ",",
+				FieldIndex:       2,
+				IgnoreHeaderRows: 0,
+				NeedValues:       true,
+			},
+			out: options.OutValues{
+				Count:   5,
+				Min:     6,
+				Max:     10,
+				Sum:     40,
+				Average: 8,
+				Median:  8,
+			},
+		},
+		TestCalcOutValuesData{
+			r: f(
+				"1.0,6",
+				"2.0,7",
+				"5.0,8",
+				"3.0,9",
+				"4.0,10",
+			),
+			opts: options.Options{
+				SortedFlag: true,
+				MedianFlag: true,
+			},
+			conf: arthmath.MinMaxSumAvgConfig{
+				Delimiter:        ",",
+				FieldIndex:       2,
+				IgnoreHeaderRows: 1,
+				NeedValues:       true,
+			},
+			out: options.OutValues{
+				Count:   4,
+				Min:     7,
+				Max:     10,
+				Sum:     34,
+				Average: 8.5,
+				Median:  8,
+			},
+		},
 	}
 
 	for _, v := range tds {
-		ov, err := calcOutValues(v.r, v.opts, nil)
+		ov, err := calcOutValues(v.r, v.opts, v.conf)
 		assert.NoError(t, err)
 		assert.Equal(t, v.out, ov)
 	}

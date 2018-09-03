@@ -15,7 +15,8 @@
 
 ## 使い方
 
-```time.list
+```
+# num.txt
 1
 4
 2
@@ -24,17 +25,19 @@
 ```
 
 ```bash
-arth time.list
-# 出力
-# filename	count	min	max	sum	avg
-# time.list	5	1	5	15	3
+$ arth num.txt
+testdata/normal_num.txt	5	1	5	15	3	3	4
+
+# ヘッダ有り
+$ arth num.txt -H
+filename	count	min	max	sum	avg	median	95percentile
+testdata/normal_num.txt	5	1	5	15	3	3	4
 ```
 
 ### 複数ファイル指定
 
 ```bash
-$ arth -m -p 95 testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
-filename	count	min	max	sum	avg	median	95percentile
+$ arth testdata/bench.txt testdata/normal_num.txt testdata/bigdata.txt 
 testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
 testdata/normal_num.txt	5	1	5	15	3	3	4
 testdata/bigdata.txt	100	1	100	5050	50.5	50	95
@@ -45,13 +48,9 @@ testdata/bigdata.txt	100	1	100	5050	50.5	50	95
 `\d:filepath`と指定することで、カラム指定でファイルを読み込める。
 
 ```bash
-$ arth -m -p 95 -d , -f 2:testdata/sample.csv -f 3:testdata/sample.csv -f testdata/bench.txt
-warn: illegal value. value=score
-warn: illegal value. value=ok
-filename	count	min	max	sum	avg	median	95percentile
-testdata/sample.csv	5	70	90	400	80	77	88
-testdata/sample.csv	5	80	80	400	80	80	80
-testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
+$ arth -d , -D , -I 1 -f 2:testdata/sample.csv -f 3:testdata/sample.csv     
+testdata/sample.csv,5,70,90,400,80,77,88
+testdata/sample.csv,5,80,80,400,80,80,80
 ```
 
 ## ヘルプ
@@ -63,22 +62,23 @@ testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
 
     Application Options:
       -v, --version        バージョン情報
-          --nofilename     入力元ファイル名を出力しない
-          --count          データ数を出力する
-          --min            最小値を出力する
-          --max            最大値を出力する
-          --sum            合計を出力する
-          --avg            平均値を出力する
+      -N, --nofilename     入力元ファイル名を出力しない
+      -c, --count          データ数を出力する
+      -n, --min            最小値を出力する
+      -x, --max            最大値を出力する
+      -u, --sum            合計を出力する
+      -a, --avg            平均値を出力する
       -m, --median         中央値を出力する
       -p, --percentile=    パーセンタイル値を出力する(1~100)
       -s, --sorted         入力元データがソート済みフラグ
-      -n, --noheader       ヘッダを出力しない
+      -H, --header         ヘッダを出力する
       -d, --indelimiter=   入力の区切り文字を指定 (default: "\t")
       -D, --outdelimiter=  出力の区切り文字を指定 (default: "\t")
       -o, --outfile=       出力ファイルパス
       -f, --fieldfilepath= 複数フィールド持つファイルと、その区切り位置指定(N:filep-
 
                            ath)
+      -I, --ignoreheader=  入力データヘッダを指定行無視する
 
     Help Options:
       -h, --help           Show this help message
