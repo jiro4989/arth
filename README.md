@@ -92,38 +92,10 @@ testdata/sample.csv,5,80,80,400,80,80,80
 
 ### オプション引数
 
-count,min,max,sum,avgはデフォルトで出力する。
+count,min,max,sum,avg,median,percentileはデフォルトですべて出力する。
 
-ただし、上記のいずれもオプション引数で指定しない場合のみ上記がデフォルトで出力さ
+ただし、上記のいずれかを指定した場合、ファイルパスとそのオプションの値のみ出力さ
 れる。
-
-つまり、上記の5つのうち、1つでも意図的に指定すると、他の4つが出力されなくなる。
-
-### 通常例
-
-```bash
-$ arth testdata/bigdata.txt
-filename	count	min	max	sum	avg
-testdata/bigdata.txt	100	1	100	5050	50.5
-```
-
-```bash
-$ arth testdata/bigdata.txt --count
-filename	count
-testdata/bigdata.txt	100
-```
-
-```bash
-$ arth testdata/bigdata.txt --count --sum
-filename	count	sum
-testdata/bigdata.txt	100	5050
-```
-
-```bash
-$ arth testdata/bigdata.txt -m
-filename	count	min	max	sum	avg	median
-testdata/bigdata.txt	100	1	100	5050	50.5	50
-```
 
 ## 開発方法
 
