@@ -38,7 +38,7 @@ archive: xbuild
 		done
 
 .PHONY: release
-release: archive bootstrap
+release: bootstrap test archive
 	ghr $(VERSION) $(DIST_DIR)/
 
 .PHONY: test
