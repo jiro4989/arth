@@ -11,19 +11,75 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type TestMainData struct {
+	args []string
+}
+
+func TestMain(t *testing.T) {
+	tds := []TestMainData{
+		TestMainData{
+			args: []string{
+				"main.go",
+				"testdata/normal_num.txt",
+			},
+		},
+		TestMainData{
+			args: []string{
+				"main.go",
+				"testdata/normal_num.txt",
+				"testdata/normal_num.txt",
+			},
+		},
+		TestMainData{
+			args: []string{
+				"main.go",
+				"-D", ",",
+				"testdata/normal_num.txt",
+			},
+		},
+		TestMainData{
+			args: []string{
+				"main.go",
+				"-m",
+				"testdata/bigdata.txt",
+			},
+		},
+		TestMainData{
+			args: []string{
+				"main.go",
+				"-p",
+				"95",
+				"testdata/bigdata.txt",
+			},
+		},
+		TestMainData{
+			args: []string{
+				"main.go",
+				"-f", "1:testdata/sample.csv",
+				"-f", "2:testdata/sample.csv",
+				"-f", "testdata/sample.csv",
+			},
+		},
+	}
+	for _, v := range tds {
+		os.Args = v.args
+		main()
+	}
+}
+
 func TestProcessInput(t *testing.T) {
 	args := []string{"testdata/bigdata.txt"}
 	opts := options.Options{
-		CountFlag:    true,
-		MinFlag:      true,
-		MaxFlag:      true,
-		SumFlag:      true,
-		AverageFlag:  true,
-		MedianFlag:   true,
-		SortedFlag:   false,
-		NoHeaderFlag: false,
-		Delimiter:    "\t",
-		OutFile:      "",
+		CountFlag:      true,
+		MinFlag:        true,
+		MaxFlag:        true,
+		SumFlag:        true,
+		AverageFlag:    true,
+		MedianFlag:     true,
+		SortedFlag:     false,
+		NoHeaderFlag:   false,
+		InputDelimiter: "\t",
+		OutFile:        "",
 	}
 	o, err := processInput(args, opts)
 	assert.NoError(t, err)
@@ -59,16 +115,16 @@ func TestProcessInput(t *testing.T) {
 
 func TestProcessStdin(t *testing.T) {
 	opts := options.Options{
-		CountFlag:    true,
-		MinFlag:      true,
-		MaxFlag:      true,
-		SumFlag:      true,
-		AverageFlag:  true,
-		MedianFlag:   true,
-		SortedFlag:   false,
-		NoHeaderFlag: false,
-		Delimiter:    "\t",
-		OutFile:      "",
+		CountFlag:      true,
+		MinFlag:        true,
+		MaxFlag:        true,
+		SumFlag:        true,
+		AverageFlag:    true,
+		MedianFlag:     true,
+		SortedFlag:     false,
+		NoHeaderFlag:   false,
+		InputDelimiter: "\t",
+		OutFile:        "",
 	}
 
 	var err error
@@ -103,16 +159,16 @@ func TestProcessMultiInput(t *testing.T) {
 				"testdata/normal_num.txt",
 			},
 			opts: options.Options{
-				CountFlag:    true,
-				MinFlag:      true,
-				MaxFlag:      true,
-				SumFlag:      true,
-				AverageFlag:  true,
-				MedianFlag:   true,
-				SortedFlag:   false,
-				NoHeaderFlag: false,
-				Delimiter:    "\t",
-				OutFile:      "",
+				CountFlag:      true,
+				MinFlag:        true,
+				MaxFlag:        true,
+				SumFlag:        true,
+				AverageFlag:    true,
+				MedianFlag:     true,
+				SortedFlag:     false,
+				NoHeaderFlag:   false,
+				InputDelimiter: "\t",
+				OutFile:        "",
 			},
 			out: []options.OutValues{
 				options.OutValues{
@@ -141,17 +197,17 @@ func TestProcessMultiInput(t *testing.T) {
 				"testdata/normal_num.txt",
 			},
 			opts: options.Options{
-				CountFlag:    true,
-				MinFlag:      true,
-				MaxFlag:      true,
-				SumFlag:      true,
-				AverageFlag:  true,
-				MedianFlag:   true,
-				SortedFlag:   false,
-				NoHeaderFlag: false,
-				Percentile:   95,
-				Delimiter:    "\t",
-				OutFile:      "",
+				CountFlag:      true,
+				MinFlag:        true,
+				MaxFlag:        true,
+				SumFlag:        true,
+				AverageFlag:    true,
+				MedianFlag:     true,
+				SortedFlag:     false,
+				NoHeaderFlag:   false,
+				Percentile:     95,
+				InputDelimiter: "\t",
+				OutFile:        "",
 			},
 			out: []options.OutValues{
 				options.OutValues{
@@ -182,17 +238,17 @@ func TestProcessMultiInput(t *testing.T) {
 				"testdata/normal_num.txt",
 			},
 			opts: options.Options{
-				CountFlag:    true,
-				MinFlag:      true,
-				MaxFlag:      true,
-				SumFlag:      true,
-				AverageFlag:  true,
-				MedianFlag:   false,
-				SortedFlag:   false,
-				NoHeaderFlag: false,
-				Percentile:   95,
-				Delimiter:    "\t",
-				OutFile:      "",
+				CountFlag:      true,
+				MinFlag:        true,
+				MaxFlag:        true,
+				SumFlag:        true,
+				AverageFlag:    true,
+				MedianFlag:     false,
+				SortedFlag:     false,
+				NoHeaderFlag:   false,
+				Percentile:     95,
+				InputDelimiter: "\t",
+				OutFile:        "",
 			},
 			out: []options.OutValues{
 				options.OutValues{
@@ -394,7 +450,7 @@ func TestCalcOutValues(t *testing.T) {
 	}
 
 	for _, v := range tds {
-		ov, err := calcOutValues(v.r, v.opts)
+		ov, err := calcOutValues(v.r, v.opts, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, v.out, ov)
 	}
@@ -407,13 +463,13 @@ func TestOut(t *testing.T) {
 		"3",
 	}
 	opts := options.Options{
-		Delimiter: "\t",
+		InputDelimiter: "\t",
 	}
 	assert.NoError(t, out(lines, opts))
 
 	opts = options.Options{
-		Delimiter: "\t",
-		OutFile:   "testdata/out/out.tsv",
+		InputDelimiter: "\t",
+		OutFile:        "testdata/out/out.tsv",
 	}
 	assert.NoError(t, out(lines, opts))
 }

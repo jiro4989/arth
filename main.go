@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/jiro4989/arth/internal/options"
@@ -44,6 +45,10 @@ func main() {
 // 引数指定がない場合は標準入力を受け取る
 // 引数指定がある場合はファイル名としてファイル読み込みを実施
 func processInput(args []string, opts options.Options) ([]options.OutValues, error) {
+	if 1 <= len(opts.SeparatableFilePath) {
+		return processMultiInput(args, opts), nil
+	}
+
 	if len(args) < 1 {
 		return processStdin(opts)
 	}
@@ -54,7 +59,7 @@ func processInput(args []string, opts options.Options) ([]options.OutValues, err
 // processStdin は標準入力のデータを処理する。
 func processStdin(opts options.Options) ([]options.OutValues, error) {
 	r := os.Stdin
-	ov, err := calcOutValues(r, opts)
+	ov, err := calcOutValues(r, opts, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +76,13 @@ type indexedFileName struct {
 // CPUの数だけワーカースレッドを起動し、並列でデータを処理する。
 // FIXME goroutineの途中にエラーが発生してもエラーを返さない。
 // ログ出力はするが
-func processMultiInput(args []string, opts options.Options) []options.OutValues {
+func processMultiInput(fns []string, opts options.Options) []options.OutValues {
 	var wg sync.WaitGroup
-	q := make(chan indexedFileName, len(args))
+	q := make(chan indexedFileName, len(fns))
 
 	// CPUの数だけワーカースレッドを起動
 	// 並列でファイルを開いて処理し、出力データ配列に追加する
-	ovs := make([]options.OutValues, len(args))
+	ovs := make([]options.OutValues, len(fns))
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
 		go func(ovs []options.OutValues) {
@@ -89,9 +94,22 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 					return
 				}
 
+				f := func(s string) string {
+					if len(opts.SeparatableFilePath) < 1 {
+						return s
+					}
+					ss := strings.Split(s, opts.InputDelimiter)
+					if len(ss) <= 1 {
+						return s
+					}
+					// 値指定は1〜なので-1する
+					n := opts.SeparatableFilePath[ifn.index].FieldIndex - 1
+					return ss[n]
+				}
+
 				fn := ifn.fileName
 				ov, err := arthio.WithOpen(fn, func(r io.Reader) (options.OutValues, error) {
-					return calcOutValues(r, opts)
+					return calcOutValues(r, opts, f)
 				})
 				if err != nil {
 					// 処理を計測してほしいのでpanicしない
@@ -106,7 +124,7 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 	}
 
 	// 処理対象のファイルパスをキューに送信
-	for i, fn := range args {
+	for i, fn := range fns {
 		ifn := indexedFileName{
 			index:    i,
 			fileName: fn,
@@ -124,13 +142,13 @@ func processMultiInput(args []string, opts options.Options) []options.OutValues 
 // メモリ消費と計算時間が増加する。
 // オプションSortedFlagが存在するとき、入力がすでにソート済みとして
 // ソート処理をスキップする。
-func calcOutValues(r io.Reader, opts options.Options) (options.OutValues, error) {
+func calcOutValues(r io.Reader, opts options.Options, f func(string) string) (options.OutValues, error) {
 	ov := options.OutValues{} // 出力データ
 	ns := make([]float64, 0)  // 読み込んだ数値配列
 	// ソートのためにデータを控えておくかフラグ
 	needValues := opts.MedianFlag || 0 < opts.Percentile
 	var err error
-	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, needValues)
+	ov.Count, ov.Min, ov.Max, ov.Sum, ov.Average, ns, err = arthmath.MinMaxSumAvg(r, needValues, f)
 	if err != nil {
 		return ov, err
 	}

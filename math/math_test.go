@@ -3,6 +3,7 @@ package math
 import (
 	"bytes"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ func TestMinMaxSumAvg(t *testing.T) {
 		return bytes.NewBufferString(s)
 	}
 
-	cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(f("1.0\n2.0\n3.0\n4.0\n5.0\n"), false)
+	cnt, min, max, sum, avg, ns, err := MinMaxSumAvg(f("1.0\n2.0\n3.0\n4.0\n5.0\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 5, cnt)
 	assert.Equal(t, 1.0, min)
@@ -22,7 +23,7 @@ func TestMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 3.0, avg)
 	assert.Equal(t, 0, len(ns))
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("5.0\n4.0\n3.0\n2.0\n1.0\n"), true)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("5.0\n4.0\n3.0\n2.0\n1.0\n"), true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1.0, min)
 	assert.Equal(t, 5.0, max)
@@ -30,21 +31,21 @@ func TestMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 3.0, avg)
 	assert.EqualValues(t, []float64{5.0, 4.0, 3.0, 2.0, 1.0}, ns)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1.0, min)
 	assert.Equal(t, 5.0, max)
 	assert.Equal(t, 15.0, sum)
 	assert.Equal(t, 3.0, avg)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1.0, min)
 	assert.Equal(t, 5.0, max)
 	assert.Equal(t, 15.0, sum)
 	assert.Equal(t, 3.0, avg)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("foobar\n4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("foobar\n4.0\n2.0\n3.0\n5.0\n1.0\na\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 5, cnt)
 	assert.Equal(t, 1.0, min)
@@ -52,7 +53,7 @@ func TestMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 15.0, sum)
 	assert.Equal(t, 3.0, avg)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, cnt)
 	assert.Equal(t, 1.0, min)
@@ -60,7 +61,7 @@ func TestMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 1.0, sum)
 	assert.Equal(t, 1.0, avg)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n2.0\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("1.0\n2.0\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, cnt)
 	assert.Equal(t, 1.0, min)
@@ -68,13 +69,33 @@ func TestMinMaxSumAvg(t *testing.T) {
 	assert.Equal(t, 3.0, sum)
 	assert.Equal(t, 1.5, avg)
 
-	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("\n"), false)
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("\n"), false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, cnt)
 	assert.Equal(t, 0.0, min)
 	assert.Equal(t, 0.0, max)
 	assert.Equal(t, 0.0, sum)
 	assert.Equal(t, 0.0, avg)
+
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("val1,val2\n1,2\n3,4\n5,6\n"), false, func(s string) string {
+		return strings.Split(s, ",")[0]
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, 3, cnt)
+	assert.Equal(t, 1.0, min)
+	assert.Equal(t, 5.0, max)
+	assert.Equal(t, 9.0, sum)
+	assert.Equal(t, 3.0, avg)
+
+	cnt, min, max, sum, avg, ns, err = MinMaxSumAvg(f("val1,val2\n1,2\n3,4\n5,6\n"), false, func(s string) string {
+		return strings.Split(s, ",")[1]
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, 3, cnt)
+	assert.Equal(t, 2.0, min)
+	assert.Equal(t, 6.0, max)
+	assert.Equal(t, 12.0, sum)
+	assert.Equal(t, 4.0, avg)
 }
 
 func TestMedian(t *testing.T) {

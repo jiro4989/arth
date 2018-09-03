@@ -1,8 +1,10 @@
 package options
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
@@ -19,21 +21,76 @@ const (
 	HeaderPercentile = "percentile"
 )
 
+type SeparatableFilePath struct {
+	FieldIndex int
+	FilePath   string
+}
+
+func (s *SeparatableFilePath) UnmarshalFlag(v string) error {
+	const sep = ":"
+
+	// 空文字はNG
+	if strings.TrimSpace(v) == "" {
+		return errors.New("not allowed empty value.")
+	}
+
+	// 区切り文字がなければ、ファイルパスとしてそのまま返す
+	// インデックスは1
+	if !strings.Contains(v, sep) {
+		s.FieldIndex = 1
+		s.FilePath = v
+		return nil
+	}
+
+	// 空白を切り詰めて数値変換
+	parts := strings.Split(v, sep)
+
+	stri := strings.TrimSpace(parts[0])
+	fn := parts[1]
+
+	if stri == "" || fn == "" {
+		msg := fmt.Sprintf("value is empty. index=%s filename=%s", stri, fn)
+		return errors.New(msg)
+	}
+
+	i, err := strconv.Atoi(stri)
+	if err != nil {
+		return errors.New("expected that first values is integer that separated by a : .")
+	}
+
+	// 1未満はNG
+	if i < 1 {
+		msg := fmt.Sprintf("integer is over 1. input=%v", i)
+		return errors.New(msg)
+	}
+
+	s.FieldIndex = i
+	s.FilePath = fn
+
+	return nil
+}
+
+func (s SeparatableFilePath) MarshalFlag() (string, error) {
+	return fmt.Sprintf("%d:%s", s.FieldIndex, s.FilePath), nil
+}
+
 // Options はコマンドラインオプション引数です。
 type Options struct {
-	Version        func() `short:"v" long:"version" description:"バージョン情報"`
-	NoFileNameFlag bool   `long:"nofilename" description:"入力元ファイル名を出力しない"`
-	CountFlag      bool   `long:"count" description:"データ数を出力する"`
-	MinFlag        bool   `long:"min" description:"最小値を出力する"`
-	MaxFlag        bool   `long:"max" description:"最大値を出力する"`
-	SumFlag        bool   `long:"sum" description:"合計を出力する"`
-	AverageFlag    bool   `long:"avg" description:"平均値を出力する"`
-	MedianFlag     bool   `short:"m" long:"median" description:"中央値を出力する"`
-	Percentile     int    `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
-	SortedFlag     bool   `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
-	NoHeaderFlag   bool   `short:"n" long:"noheader" description:"ヘッダを出力しない"`
-	Delimiter      string `short:"d" long:"delimiter" description:"出力時の区切り文字を指定" default:"\t"`
-	OutFile        string `short:"o" long:"outfile" description:"出力ファイルパス"`
+	Version             func()                `short:"v" long:"version" description:"バージョン情報"`
+	NoFileNameFlag      bool                  `long:"nofilename" description:"入力元ファイル名を出力しない"`
+	CountFlag           bool                  `long:"count" description:"データ数を出力する"`
+	MinFlag             bool                  `long:"min" description:"最小値を出力する"`
+	MaxFlag             bool                  `long:"max" description:"最大値を出力する"`
+	SumFlag             bool                  `long:"sum" description:"合計を出力する"`
+	AverageFlag         bool                  `long:"avg" description:"平均値を出力する"`
+	MedianFlag          bool                  `short:"m" long:"median" description:"中央値を出力する"`
+	Percentile          int                   `short:"p" long:"percentile" description:"パーセンタイル値を出力する(1~100)"`
+	SortedFlag          bool                  `short:"s" long:"sorted" description:"入力元データがソート済みフラグ"`
+	NoHeaderFlag        bool                  `short:"n" long:"noheader" description:"ヘッダを出力しない"`
+	InputDelimiter      string                `short:"d" long:"indelimiter" description:"入力の区切り文字を指定" default:"\t"`
+	OutputDelimiter     string                `short:"D" long:"outdelimiter" description:"出力の区切り文字を指定" default:"\t"`
+	OutFile             string                `short:"o" long:"outfile" description:"出力ファイルパス"`
+	SeparatableFilePath []SeparatableFilePath `short:"f" long:"fieldfilepath" description:"TODO"`
 }
 
 // OutValues はFormat関数で使用する値構造体です。
@@ -63,6 +120,16 @@ func Parse(version string) (Options, []string) {
 		os.Exit(0)
 	}
 	opts.Setup()
+
+	// -f フラグがあるときはファイルパスを上書きする
+	l := len(opts.SeparatableFilePath)
+	if 1 <= l {
+		fns := make([]string, l)
+		for i, v := range opts.SeparatableFilePath {
+			fns[i] = v.FilePath
+		}
+		args = fns
+	}
 
 	return opts, args
 }
@@ -149,7 +216,7 @@ func Format(vs []OutValues, opts Options) []string {
 		}
 	}
 
-	s := strings.Join(headers, opts.Delimiter)
+	s := strings.Join(headers, opts.OutputDelimiter)
 	if !opts.NoHeaderFlag {
 		lines = append(lines, s)
 	}
@@ -160,7 +227,7 @@ func Format(vs []OutValues, opts Options) []string {
 		for _, k := range headers {
 			values = append(values, m[k])
 		}
-		s := strings.Join(values, opts.Delimiter)
+		s := strings.Join(values, opts.OutputDelimiter)
 		lines = append(lines, s)
 	}
 

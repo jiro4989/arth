@@ -14,7 +14,7 @@ import (
 // needValuesフラグがtrueのときは入力をfloat64スライスに変換した値も返す
 // needValuesフラグをセットしなければスライスは初期値のまま返却し、
 // スライスにデータを保持しないため省メモリになる
-func MinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg float64, ns []float64, err error) {
+func MinMaxSumAvg(r io.Reader, needValues bool, f func(string) string) (cnt int, min, max, sum, avg float64, ns []float64, err error) {
 	min = math.MaxFloat64 // 最初にでかい値を入れてないと判定されない
 	max = 0.0
 	sum = 0.0
@@ -25,6 +25,9 @@ func MinMaxSumAvg(r io.Reader, needValues bool) (cnt int, min, max, sum, avg flo
 	for sc.Scan() {
 		line := sc.Text()
 		line = strings.Trim(line, " ")
+		if f != nil {
+			line = f(line)
+		}
 		n, err := strconv.ParseFloat(line, 64)
 		if err != nil {
 			// 不正な文字列が存在しても後続の処理を継続してほしいのでcontinue
