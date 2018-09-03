@@ -76,7 +76,9 @@ testdata/bench.txt	6000000	1	6000000	18000003000000	3000000.5	3000000	5700000
       -d, --indelimiter=   入力の区切り文字を指定 (default: "\t")
       -D, --outdelimiter=  出力の区切り文字を指定 (default: "\t")
       -o, --outfile=       出力ファイルパス
-      -f, --fieldfilepath= TODO
+      -f, --fieldfilepath= 複数フィールド持つファイルと、その区切り位置指定(N:filep-
+
+                           ath)
 
     Help Options:
       -h, --help           Show this help message

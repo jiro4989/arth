@@ -90,7 +90,7 @@ type Options struct {
 	InputDelimiter      string                `short:"d" long:"indelimiter" description:"入力の区切り文字を指定" default:"\t"`
 	OutputDelimiter     string                `short:"D" long:"outdelimiter" description:"出力の区切り文字を指定" default:"\t"`
 	OutFile             string                `short:"o" long:"outfile" description:"出力ファイルパス"`
-	SeparatableFilePath []SeparatableFilePath `short:"f" long:"fieldfilepath" description:"TODO"`
+	SeparatableFilePath []SeparatableFilePath `short:"f" long:"fieldfilepath" description:"複数フィールド持つファイルと、その区切り位置指定(N:filepath)"`
 }
 
 // OutValues はFormat関数で使用する値構造体です。
