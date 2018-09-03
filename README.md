@@ -137,22 +137,28 @@ make
 ```bash
 $ bash script/bench.sh
 median.sh vs arth
+median.sh
 
-real	0m4.498s
-user	0m10.668s
-sys	0m0.162s
+real	0m4.036s
+user	0m10.165s
+sys	0m0.099s
 
-real	0m2.447s
-user	0m2.466s
-sys	0m0.040s
+arth
+
+real	0m2.292s
+user	0m2.312s
+sys	0m0.033s
 ================================
-arth -m goroutine vs loop arth -m
+loop arth vs arth goroutine
+loop arth
 
-real	0m3.472s
-user	0m9.636s
-sys	0m0.127s
+real	0m6.896s
+user	0m6.948s
+sys	0m0.114s
 
-real	0m14.631s
-user	0m14.763s
-sys	0m0.214s
+arth goroutine
+
+real	0m3.399s
+user	0m9.441s
+sys	0m0.073s
 ```
