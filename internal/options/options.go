@@ -176,7 +176,7 @@ func Format(vs []OutValues, opts Options) []string {
 				}
 
 				if n, ok := v.(float64); ok {
-					s := fmt.Sprintf("%.2f", n)
+					s := fmt.Sprintf("%f", n)
 					// 不要な末尾の0埋めを削除
 					s = strings.TrimRight(s, "0")
 					s = strings.TrimRight(s, ".")
