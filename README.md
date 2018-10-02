@@ -1,8 +1,8 @@
 # arth (arithmetic)
 
-算術コマンドラインツール。
-
 [![Build Status](https://travis-ci.org/jiro4989/arth.svg?branch=master)](https://travis-ci.org/jiro4989/arth)
+
+算術コマンドラインツール。
 
 ## 目的
 
