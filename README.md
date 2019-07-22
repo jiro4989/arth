@@ -116,6 +116,9 @@ count,min,max,sum,avg,median,percentileはデフォルトですべて出力す�
 
 ## 開発方法
 
+パッケージ管理には[dep](https://github.com/golang/dep)を使用しています。
+depをインストールしていない場合は先にインストールしてください。
+
 ```
 make deps
 make
