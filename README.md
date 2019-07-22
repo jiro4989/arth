@@ -30,6 +30,11 @@
 
 `go get github.com/jiro4989/arth`
 
+あるいは
+
+[Releases](https://github.com/jiro4989/arth/releases)から各プラットフォーム向けの実行可能バイナリをダウンロードして
+arthコマンドをPATHの通ったディレクトリに配置してください。
+
 ## 使い方
 
 ```
